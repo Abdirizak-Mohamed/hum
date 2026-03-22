@@ -112,7 +112,7 @@ export default function Home() {
                 <div className="h-24 bg-gray-800 flex items-center justify-center">
                   {item.mediaUrl ? (
                     <img
-                      src={`/api/media/${item.mediaUrl}`}
+                      src={item.mediaUrl.startsWith('http') ? item.mediaUrl : `/api/media/${item.mediaUrl}`}
                       alt={item.contentType}
                       className="w-full h-full object-cover"
                     />

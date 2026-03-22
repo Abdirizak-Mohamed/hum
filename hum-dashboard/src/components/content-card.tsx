@@ -38,7 +38,7 @@ export function ContentCard({ item, onPreview }: ContentCardProps) {
       <div className="h-28 bg-gray-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
         {firstMedia ? (
           <img
-            src={`/api/media/${firstMedia}`}
+            src={firstMedia.startsWith('http') ? firstMedia : `/api/media/${firstMedia}`}
             alt={item.contentType}
             className="w-full h-full object-cover"
           />

@@ -48,7 +48,7 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
         {/* Image */}
         {firstMedia ? (
           <img
-            src={`/api/media/${firstMedia}`}
+            src={firstMedia.startsWith('http') ? firstMedia : `/api/media/${firstMedia}`}
             alt={item.contentType}
             className="w-full max-h-72 object-cover"
           />
