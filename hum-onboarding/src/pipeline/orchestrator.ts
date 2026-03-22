@@ -1,5 +1,6 @@
+import { NotFoundError } from 'hum-core';
 import * as sessionRepo from '../session/repository.js';
-import type { OnboardingSession, StepName } from '../session/types.js';
+import type { OnboardingSession } from '../session/types.js';
 import type { OnboardingContext, PipelineStep } from './types.js';
 
 export async function runPipeline(
@@ -28,7 +29,8 @@ export async function runPipeline(
         blockedReason: message,
       });
       const failed = await sessionRepo.getById(ctx.db, sessionId);
-      return failed!;
+      if (!failed) throw new NotFoundError('OnboardingSession', sessionId);
+      return failed;
     }
   }
 
@@ -37,5 +39,6 @@ export async function runPipeline(
     completedAt: new Date(),
   });
   const completed = await sessionRepo.getById(ctx.db, sessionId);
-  return completed!;
+  if (!completed) throw new NotFoundError('OnboardingSession', sessionId);
+  return completed;
 }
