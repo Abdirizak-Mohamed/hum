@@ -60,20 +60,104 @@ The `ContentEngine` interface is defined and exported early so hum-content-engin
 
 ### New Table: `onboarding_sessions` (in hum-core schema)
 
-| Column | Type | Constraints | Purpose |
-|--------|------|-------------|---------|
-| id | TEXT | PK | UUIDv7 |
-| client_id | TEXT | NOT NULL, UNIQUE, FK→clients(id) | One session per client |
-| status | TEXT | NOT NULL, DEFAULT 'in_progress' | 'in_progress' \| 'complete' \| 'failed' |
-| current_step | TEXT | NULL | Name of step currently executing |
-| step_results | JSON | DEFAULT '{}' | Record<StepName, { status, output?, error? }> |
-| intake_data | JSON | NULL | Raw form submission blob |
-| blocked_reason | TEXT | NULL | Human-readable failure reason |
-| started_at | INTEGER | NOT NULL | Timestamp (ms) |
-| completed_at | INTEGER | NULL | Timestamp (ms) |
-| updated_at | INTEGER | NOT NULL | Timestamp (ms) |
+| Column | Type | Drizzle Definition | Purpose |
+|--------|------|-------------------|---------|
+| id | TEXT | `text('id').primaryKey()` | UUIDv7 |
+| client_id | TEXT | `text('client_id').notNull().references(() => clients.id).unique()` | One session per client |
+| status | TEXT | `text('status', { enum: ['in_progress', 'complete', 'failed'] }).notNull().default('in_progress')` | Session lifecycle |
+| current_step | TEXT | `text('current_step')` | Name of step currently executing |
+| step_results | TEXT (JSON) | `text('step_results', { mode: 'json' }).$type<Record<StepName, StepResult>>().default({})` | Per-step status, output, error |
+| intake_data | TEXT (JSON) | `text('intake_data', { mode: 'json' }).$type<IntakeData>()` | Raw form submission |
+| blocked_reason | TEXT | `text('blocked_reason')` | Human-readable failure reason |
+| started_at | INTEGER | `integer('started_at', { mode: 'timestamp_ms' }).notNull()` | Timestamp |
+| completed_at | INTEGER | `integer('completed_at', { mode: 'timestamp_ms' })` | Timestamp |
+| updated_at | INTEGER | `integer('updated_at', { mode: 'timestamp_ms' }).notNull()` | Timestamp |
 
-New Zod schemas and table export added to hum-core's public API.
+Follows hum-core's existing patterns: `mode: 'timestamp_ms'` for timestamps, `mode: 'json'` with `$type<>()` for typed JSON columns.
+
+**pushSchema DDL** (for `connection.ts` in-memory test databases):
+
+```sql
+CREATE TABLE IF NOT EXISTS onboarding_sessions (
+  id TEXT PRIMARY KEY,
+  client_id TEXT NOT NULL UNIQUE REFERENCES clients(id),
+  status TEXT NOT NULL DEFAULT 'in_progress',
+  current_step TEXT,
+  step_results TEXT DEFAULT '{}',
+  intake_data TEXT,
+  blocked_reason TEXT,
+  started_at INTEGER NOT NULL,
+  completed_at INTEGER,
+  updated_at INTEGER NOT NULL
+);
+```
+
+New Zod schemas (`onboardingSessionSchema`, `createOnboardingSessionSchema`, `updateOnboardingSessionSchema`) and table export added to hum-core's public API. The `pushSchema()` function in `connection.ts` must also be updated to include the new table for in-memory test databases.
+
+### IntakeData Type
+
+Defined as a Zod schema in hum-onboarding (`session/types.ts`) and validated on entry to `startOnboarding()`:
+
+```typescript
+type IntakeData = {
+  // Step 1: Client creation
+  businessName: string;
+  email: string;
+  address?: string;
+  phone?: string;
+  latitude?: number;
+  longitude?: number;
+  openingHours?: Record<string, string>;
+  deliveryPlatforms?: string[];
+  planTier?: 'starter' | 'growth' | 'premium';
+
+  // Step 2: Menu processing
+  menu: string;                // plain text menu (MVP)
+
+  // Step 3: Brand generation
+  cuisineType?: string;
+  brandPreferences?: string;   // free-text brand preferences from client
+
+  // Step 4: Social accounts
+  socialAccounts?: Array<{
+    platform: 'instagram' | 'facebook' | 'tiktok' | 'google_business';
+    platformAccountId: string;  // e.g., Instagram username
+  }>;
+};
+```
+
+**Note on social account tokens (I4):** In MVP, `socialAccounts` contains only `platform` and `platformAccountId` — no tokens. The `socialAccountRepo.create()` call stores the account with status `'connected'` and no credential. Actual token/credential management is deferred to post-MVP when full OAuth flows are implemented.
+
+### OnboardingSession Model
+
+Follows hum-core's model class pattern — wraps the database row in a readonly class with business logic methods:
+
+```typescript
+class OnboardingSession {
+  readonly id: string;
+  readonly clientId: string;
+  readonly status: 'in_progress' | 'complete' | 'failed';
+  readonly currentStep: StepName | null;
+  readonly stepResults: Record<StepName, StepResult>;
+  readonly intakeData: IntakeData | null;
+  readonly blockedReason: string | null;
+  readonly startedAt: Date;
+  readonly completedAt: Date | null;
+  readonly updatedAt: Date;
+
+  constructor(row: OnboardingSessionRow) { /* ... */ }
+
+  isComplete(): boolean;
+  isFailed(): boolean;
+  getFailedStep(): StepName | undefined;
+  getCompletedSteps(): StepName[];
+  getNextPendingStep(allSteps: StepName[]): StepName | undefined;
+}
+```
+
+### Session Repository Boundary
+
+The `onboarding_sessions` table definition and Zod schemas live in hum-core (consistent with all other tables), but the session repository (`session/repository.ts`) lives in hum-onboarding. This is intentional: the table is a shared data structure that the dashboard will also query, but the repository contains onboarding-specific logic (step result updates, status transitions) that belongs in the onboarding domain, not in hum-core.
 
 ---
 
@@ -90,11 +174,22 @@ type StepResult = {
   status: StepStatus;
   output?: Record<string, unknown>;
   error?: string;
+  retryCount?: number;           // incremented on each resume attempt; aids debugging
+};
+
+// The db field is the inner Drizzle instance (BetterSQLite3Database<typeof schema>),
+// NOT the HumDb wrapper. This matches hum-core's repository signatures which all
+// accept the inner Drizzle instance as their first parameter.
+type Db = BetterSQLite3Database<typeof schema>;
+
+type IntegrationClients = {
+  ai: AiClient;                  // from hum-integrations — used by steps 2 and 3
+  contentEngine: ContentEngine;  // from engine/interface.ts — used by step 5
 };
 
 type OnboardingContext = {
   session: OnboardingSession;
-  db: HumDb;
+  db: Db;
   integrations: IntegrationClients;
 };
 
@@ -107,6 +202,11 @@ type PipelineStep = {
 ### Orchestrator
 
 ```typescript
+// Note: ctx.session is a snapshot from pipeline start. The retryCount field
+// accumulates across separate resumeOnboarding() calls, not within a single run.
+// All session helper functions receive ctx.db (the inner Drizzle instance)
+// as their first parameter, consistent with hum-core's repository pattern.
+
 async function runPipeline(
   sessionId: string,
   ctx: OnboardingContext,
@@ -116,24 +216,26 @@ async function runPipeline(
     const existing = ctx.session.stepResults[step.name];
     if (existing?.status === 'complete') continue;
 
-    await updateSession(sessionId, { currentStep: step.name });
-    await updateStepStatus(sessionId, step.name, 'processing');
+    // Single write: set currentStep and mark step as 'processing' in one update
+    await updateSessionAndStepStatus(ctx.db, sessionId, step.name, 'processing');
 
     try {
       const result = await step.execute(ctx);
-      await saveStepResult(sessionId, step.name, result);
-    } catch (err) {
-      await saveStepResult(sessionId, step.name, {
+      await saveStepResult(ctx.db, sessionId, step.name, result);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      await saveStepResult(ctx.db, sessionId, step.name, {
         status: 'failed',
-        error: err.message,
+        error: message,
+        retryCount: (existing?.retryCount ?? 0) + 1,
       });
-      await updateSession(sessionId, { status: 'failed', blockedReason: err.message });
-      return getSession(sessionId);
+      await updateSession(ctx.db, sessionId, { status: 'failed', blockedReason: message });
+      return getSession(ctx.db, sessionId);
     }
   }
 
-  await updateSession(sessionId, { status: 'complete', completedAt: new Date() });
-  return getSession(sessionId);
+  await updateSession(ctx.db, sessionId, { status: 'complete', completedAt: new Date() });
+  return getSession(ctx.db, sessionId);
 }
 ```
 
@@ -149,26 +251,28 @@ async function runPipeline(
 
 ### Step 2: Process Menu
 - **Input:** `intake_data.menu` (text string — MVP is text only)
-- **Action:** Sends menu text to OpenAI via hum-integrations. LLM structures into `MenuItem[]`
+- **Action:** Sends menu text to OpenAI via `ctx.integrations.ai.generateCopy()` with the menu-extraction prompt. LLM returns JSON which is validated against a `MenuItem[]` Zod schema using `.safeParse()` — if validation fails, the step fails with a descriptive error rather than silently accepting malformed data.
 - **Output:** `{ menuItems: MenuItem[] }`
 - Prompt encodes takeaway menu conventions (starters/mains/sides, meal deals, combo numbering)
+- The `MenuItem` type is hum-core's existing type (`{ name, description, category, price, photoUrl? }`), not the old DESIGN.md shape which included `dietaryFlags` and `isPopular`. The menu-extraction prompt must produce output matching hum-core's shape.
 
 ### Step 3: Generate Brand Profile
-- **Input:** Structured menu from step 2 + business info from `intake_data`
-- **Action:** Sends combined context to OpenAI via hum-integrations. Generates brand voice, selling points, target audience, content themes, hashtag strategy, peak posting times
-- **Output:** Full BrandProfile data
-- Calls `brandProfileRepo.create()` to persist
+- **Input:** Structured menu from step 2's `output.menuItems` (read from `session.stepResults.process_menu.output`) + business info from `intake_data` (location, cuisineType, brandPreferences)
+- **Action:** Sends combined context to OpenAI via `ctx.integrations.ai.generateBrandProfile()`. LLM output is validated against a Zod schema.
+- **Output:** Full BrandProfile data including `peakPostingTimes`
+- **Note on hum-integrations:** The existing `BrandProfileResult` type in hum-integrations is missing `peakPostingTimes`. This must be added to `BrandProfileResult` and `BrandInput` as part of the implementation. The `menuItems` field is **not** part of the LLM output — it is carried forward from step 2 and composed with the LLM result when creating the BrandProfile.
+- Calls `brandProfileRepo.create()` to persist, combining LLM-generated fields with `menuItems` from step 2
 - Most important step — prompt encodes domain knowledge about takeaway content performance
 
 ### Step 4: Setup Social Accounts
-- **Input:** `intake_data.socialAccounts` (array of `{ platform, accountId, token }`)
+- **Input:** `intake_data.socialAccounts` (array of `{ platform, platformAccountId }`)
 - **Action:** For each account, calls `socialAccountRepo.create()` with status `'connected'`
-- **Output:** `{ accounts: Array<{ platform, accountId }> }`
-- No OAuth, no Ayrshare config, no test post in MVP
+- **Output:** `{ accounts: Array<{ platform, platformAccountId }> }`
+- No tokens, no OAuth, no Ayrshare config, no test post in MVP. Accounts are created with identifiers only.
 
 ### Step 5: Trigger Content Generation
-- **Input:** `clientId`, brand profile from step 3
-- **Action:** Calls the `ContentEngine` interface (stubbed for MVP)
+- **Input:** `clientId` from step 1, brand profile data from step 3 (including `menuItems` from step 2), connected platforms from step 4
+- **Action:** Calls `ctx.integrations.contentEngine.triggerBatch()` with a `ContentEngineRequest` assembling data from prior steps. `batchSize` defaults to 30.
 - **Output:** `{ contentBatchId: string, status: 'queued' }`
 
 ---
@@ -212,24 +316,28 @@ MVP ships with a stub implementation that logs and returns `{ status: 'queued' }
 ## Public API
 
 ```typescript
-// Onboarding lifecycle
-startOnboarding(db, intakeData, integrations): Promise<OnboardingSession>
-resumeOnboarding(db, sessionId, integrations): Promise<OnboardingSession>
+// Onboarding lifecycle (db is the inner Drizzle instance, not HumDb wrapper)
+// startOnboarding checks for an existing session for the client email before creating.
+// If one exists, throws DuplicateError (from hum-core) rather than hitting the DB unique constraint.
+startOnboarding(db: Db, intakeData: IntakeData, integrations: IntegrationClients): Promise<OnboardingSession>
+resumeOnboarding(db: Db, sessionId: string, integrations: IntegrationClients): Promise<OnboardingSession>
 
 // Status queries
-getOnboardingStatus(db, sessionId): Promise<OnboardingSession>
-getOnboardingByClientId(db, clientId): Promise<OnboardingSession | undefined>
+getOnboardingStatus(db: Db, sessionId: string): Promise<OnboardingSession>
+getOnboardingByClientId(db: Db, clientId: string): Promise<OnboardingSession | undefined>
 
 // Content engine interface (for hum-content-engine to implement)
 type ContentEngine
 type ContentEngineRequest
 type ContentEngineResponse
 
-// Types
-type OnboardingSession
+// Pipeline types
+type OnboardingSession       // model class (see Data Model section)
+type IntakeData              // Zod-validated input shape
+type IntegrationClients      // { ai: AiClient, contentEngine: ContentEngine }
 type StepName
 type StepResult
-type IntakeData
+type StepStatus
 ```
 
 ---
@@ -296,9 +404,21 @@ hum-onboarding
 ### Changes to hum-core
 
 1. New `onboarding_sessions` table in `schema.ts`
-2. New migration via `drizzle-kit generate`
-3. New Zod schemas (onboardingSessionSchema, create/update variants)
-4. Export table + schemas from `index.ts`
+2. Update `pushSchema()` in `connection.ts` to include `onboarding_sessions` for in-memory test databases
+3. New migration via `drizzle-kit generate`
+4. New Zod schemas (`onboardingSessionSchema`, create/update variants)
+5. Export table + schemas from `index.ts`
+
+### Changes to hum-integrations (prerequisite — must land before step 3 works)
+
+1. Add `peakPostingTimes: Record<string, string[]>` to `BrandProfileResult` type
+2. Add `brandPreferences?: string` to `BrandInput` type
+3. Update the `generateBrandProfile()` system prompt in `openai.ts` to request `peakPostingTimes` in its JSON output schema
+4. Update the mock provider in `openai.mock.ts` to include `peakPostingTimes` in the fixture
+
+### Workspace setup (prerequisite)
+
+1. Add `"hum-onboarding"` to `pnpm-workspace.yaml` packages list
 
 ---
 
