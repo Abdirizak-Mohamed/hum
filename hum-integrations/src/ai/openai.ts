@@ -34,13 +34,14 @@ export class OpenAiProvider {
   }
 
   async generateBrandProfile(input: BrandInput): Promise<BrandProfileResult> {
-    const systemPrompt = `You are a brand strategist specialising in restaurant and takeaway marketing. Generate a brand profile as JSON with these exact fields: brandVoiceGuide (string), keySellingPoints (string[]), targetAudienceProfile (string), contentThemes (string[]), hashtagStrategy (string[]). Return only valid JSON, no markdown.`;
+    const systemPrompt = `You are a brand strategist specialising in restaurant and takeaway marketing. Generate a brand profile as JSON with these exact fields: brandVoiceGuide (string), keySellingPoints (string[]), targetAudienceProfile (string), contentThemes (string[]), hashtagStrategy (string[]), peakPostingTimes (object mapping platform names like "instagram", "facebook", "tiktok", "google_business" to arrays of time strings like ["12:00", "18:00", "21:00"]). Return only valid JSON, no markdown.`;
 
     const userPrompt = [
       `Business: ${input.businessName}`,
       `Menu: ${input.menuDescription}`,
       input.cuisineType ? `Cuisine: ${input.cuisineType}` : '',
       input.location ? `Location: ${input.location}` : '',
+      input.brandPreferences ? `Brand preferences: ${input.brandPreferences}` : '',
     ].filter(Boolean).join('\n');
 
     try {

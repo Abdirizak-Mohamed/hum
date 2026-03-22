@@ -19,6 +19,12 @@ export class MockOpenAiProvider {
       targetAudienceProfile: 'Local residents aged 18-45, food-delivery users, families looking for convenient dinner options, late-night diners.',
       contentThemes: ['behind-the-scenes prep', 'dish spotlights', 'customer favourites', 'seasonal specials'],
       hashtagStrategy: ['#LocalEats', '#FreshFood', '#FoodDelivery', '#TakeawayNight', '#SupportLocal'],
+      peakPostingTimes: {
+        instagram: ['12:00', '18:00', '21:00'],
+        facebook: ['12:00', '17:00', '20:00'],
+        tiktok: ['19:00', '21:00'],
+        google_business: ['11:00', '17:00'],
+      },
     };
   }
 }
