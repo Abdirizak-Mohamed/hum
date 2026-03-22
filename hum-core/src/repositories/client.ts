@@ -27,7 +27,7 @@ export async function create(
   const now = new Date();
   const id = uuidv7();
 
-  db.insert(clients)
+  await db.insert(clients)
     .values({
       id,
       businessName: data.businessName,
@@ -46,17 +46,17 @@ export async function create(
     })
     .run();
 
-  const row = db.select().from(clients).where(eq(clients.id, id)).get();
+  const row = await db.select().from(clients).where(eq(clients.id, id)).get();
   return new Client(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<Client | undefined> {
-  const row = db.select().from(clients).where(eq(clients.id, id)).get();
+  const row = await db.select().from(clients).where(eq(clients.id, id)).get();
   return row ? new Client(row) : undefined;
 }
 
 export async function getByEmail(db: Db, email: string): Promise<Client | undefined> {
-  const row = db.select().from(clients).where(eq(clients.email, email)).get();
+  const row = await db.select().from(clients).where(eq(clients.email, email)).get();
   return row ? new Client(row) : undefined;
 }
 
@@ -77,12 +77,12 @@ export async function update(
     status: 'onboarding' | 'active' | 'paused' | 'churned';
   }>,
 ): Promise<Client> {
-  db.update(clients)
+  await db.update(clients)
     .set({ ...data, updatedAt: new Date() })
     .where(eq(clients.id, id))
     .run();
 
-  const row = db.select().from(clients).where(eq(clients.id, id)).get();
+  const row = await db.select().from(clients).where(eq(clients.id, id)).get();
   if (!row) throw new NotFoundError('Client', id);
   return new Client(row);
 }
@@ -96,12 +96,12 @@ export async function list(
   if (filters?.planTier) conditions.push(eq(clients.planTier, filters.planTier as any));
 
   const rows = conditions.length
-    ? db.select().from(clients).where(and(...conditions)).all()
-    : db.select().from(clients).all();
+    ? await db.select().from(clients).where(and(...conditions)).all()
+    : await db.select().from(clients).all();
 
   return rows.map((row) => new Client(row));
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  db.delete(clients).where(eq(clients.id, id)).run();
+  await db.delete(clients).where(eq(clients.id, id)).run();
 }

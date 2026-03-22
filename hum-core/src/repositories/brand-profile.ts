@@ -32,7 +32,7 @@ export async function create(
   const now = new Date();
   const id = uuidv7();
 
-  db.insert(brandProfiles)
+  await db.insert(brandProfiles)
     .values({
       id,
       clientId: data.clientId,
@@ -50,17 +50,17 @@ export async function create(
     })
     .run();
 
-  const row = db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
+  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
   return new BrandProfile(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<BrandProfile | undefined> {
-  const row = db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
+  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
   return row ? new BrandProfile(row) : undefined;
 }
 
 export async function getByClientId(db: Db, clientId: string): Promise<BrandProfile | undefined> {
-  const row = db.select().from(brandProfiles).where(eq(brandProfiles.clientId, clientId)).get();
+  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.clientId, clientId)).get();
   return row ? new BrandProfile(row) : undefined;
 }
 
@@ -85,16 +85,16 @@ export async function update(
     logoUrl: string;
   }>,
 ): Promise<BrandProfile> {
-  db.update(brandProfiles)
+  await db.update(brandProfiles)
     .set({ ...data, updatedAt: new Date() })
     .where(eq(brandProfiles.id, id))
     .run();
 
-  const row = db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
+  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
   if (!row) throw new NotFoundError('BrandProfile', id);
   return new BrandProfile(row);
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  db.delete(brandProfiles).where(eq(brandProfiles.id, id)).run();
+  await db.delete(brandProfiles).where(eq(brandProfiles.id, id)).run();
 }

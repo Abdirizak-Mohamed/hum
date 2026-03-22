@@ -21,7 +21,7 @@ export async function create(
   const now = new Date();
   const id = uuidv7();
 
-  db.insert(socialAccounts)
+  await db.insert(socialAccounts)
     .values({
       id,
       clientId: data.clientId,
@@ -35,17 +35,17 @@ export async function create(
     })
     .run();
 
-  const row = db.select().from(socialAccounts).where(eq(socialAccounts.id, id)).get();
+  const row = await db.select().from(socialAccounts).where(eq(socialAccounts.id, id)).get();
   return new SocialAccount(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<SocialAccount | undefined> {
-  const row = db.select().from(socialAccounts).where(eq(socialAccounts.id, id)).get();
+  const row = await db.select().from(socialAccounts).where(eq(socialAccounts.id, id)).get();
   return row ? new SocialAccount(row) : undefined;
 }
 
 export async function listByClientId(db: Db, clientId: string): Promise<SocialAccount[]> {
-  const rows = db.select().from(socialAccounts).where(eq(socialAccounts.clientId, clientId)).all();
+  const rows = await db.select().from(socialAccounts).where(eq(socialAccounts.clientId, clientId)).all();
   return rows.map((row) => new SocialAccount(row));
 }
 
@@ -60,16 +60,16 @@ export async function update(
     connectedAt: Date;
   }>,
 ): Promise<SocialAccount> {
-  db.update(socialAccounts)
+  await db.update(socialAccounts)
     .set({ ...data, updatedAt: new Date() })
     .where(eq(socialAccounts.id, id))
     .run();
 
-  const row = db.select().from(socialAccounts).where(eq(socialAccounts.id, id)).get();
+  const row = await db.select().from(socialAccounts).where(eq(socialAccounts.id, id)).get();
   if (!row) throw new NotFoundError('SocialAccount', id);
   return new SocialAccount(row);
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  db.delete(socialAccounts).where(eq(socialAccounts.id, id)).run();
+  await db.delete(socialAccounts).where(eq(socialAccounts.id, id)).run();
 }
