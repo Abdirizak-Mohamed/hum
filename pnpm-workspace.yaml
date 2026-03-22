@@ -2,3 +2,4 @@ packages:
   - "hum-core"
   - "hum-integrations"
   - "hum-content-engine"
+  - "hum-onboarding"

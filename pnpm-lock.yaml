@@ -95,6 +95,31 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.5.0)(msw@2.12.14(@types/node@25.5.0)(typescript@5.9.3))(tsx@4.21.0)
 
+  hum-onboarding:
+    dependencies:
+      drizzle-orm:
+        specifier: ^0.38.4
+        version: 0.38.4(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)
+      hum-core:
+        specifier: workspace:*
+        version: link:../hum-core
+      hum-integrations:
+        specifier: workspace:*
+        version: link:../hum-integrations
+      uuidv7:
+        specifier: ^1.0.0
+        version: 1.1.0
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.5.0)(msw@2.12.14(@types/node@25.5.0)(typescript@5.9.3))
+
 packages:
 
   '@drizzle-team/brocli@0.10.2':

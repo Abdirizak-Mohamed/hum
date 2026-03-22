@@ -15,6 +15,7 @@ export type BrandInput = {
   menuDescription: string;
   cuisineType?: string;
   location?: string;
+  brandPreferences?: string;
 };
 
 export type BrandProfileResult = {
@@ -23,6 +24,7 @@ export type BrandProfileResult = {
   targetAudienceProfile: string;
   contentThemes: string[];
   hashtagStrategy: string[];
+  peakPostingTimes: Record<string, string[]>;
 };
 
 export type ImagePrompt = {
