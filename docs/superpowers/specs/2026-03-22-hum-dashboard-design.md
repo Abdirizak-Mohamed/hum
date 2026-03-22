@@ -40,7 +40,7 @@ Landing page. Operator checks in, sees status, leaves.
   - Right: Recent Issues — latest 2-3 problems with severity indicator and timestamp. Links to Issues page.
 - **Upcoming content strip** — next 4 scheduled posts as thumbnail cards (client name, platform, time). Links to Content Preview.
 
-**Data:** `clientRepo.list()`, `contentItemRepo.list()`, `socialAccountRepo.list()` — aggregated in `/api/fleet/stats`.
+**Data:** `clientRepo.list()`, `contentItemRepo.list()`, and per-client social account queries — aggregated in `/api/fleet/stats`. Note: `socialAccountRepo` currently only exposes `listByClientId()`, not a global `list()`. The fleet stats route iterates over clients to aggregate social account status. If this becomes a performance issue at scale, a `listAll()` method can be added to hum-core.
 
 ### 2. Clients List (`/clients`)
 
@@ -102,11 +102,19 @@ System-level problems requiring operator attention. Primary work surface for MVP
 | Type | Border | Actions |
 |------|--------|---------|
 | Token Expired | Red | Reconnect, Pause Client, Dismiss |
-| Token Expiring Soon | Amber | Refresh Token, Snooze 24h |
+| Token Expiring Soon | Amber | Refresh Token, Snooze 24h | *Deferred — requires `expiresAt` on SocialAccount* |
 | Failed Post | Amber | Retry, View Posts, Dismiss |
 | Content Gen Error | Purple | Retry, Skip Post, Dismiss |
 
-**Data:** Aggregated from `contentItemRepo.list({ status: 'failed' })` and `socialAccountRepo.list({ status: ['expired', 'disconnected'] })` via `/api/issues`. No new tables — issues are derived from existing data. "Dismiss" sets a `dismissedAt` timestamp on the record.
+**Data:** Aggregated from `contentItemRepo.list({ status: 'failed' })` and `socialAccountRepo` queries via `/api/issues`.
+
+**Distinguishing failure types:** ContentItem's `status: 'failed'` does not differentiate between scheduling failures and generation failures. To distinguish them: if `mediaUrls` is empty (length 0), it's a generation error (media was never created); if `mediaUrls` has entries but `postedAt` is null and status is `failed`, it's a scheduling/posting failure. The `/api/issues` route applies this logic when categorizing.
+
+**Retry mechanism:** "Retry" resets the content item's status from `failed` back to `draft` via `contentItemRepo.update()`. The content engine's scheduler picks up `draft` items on its next run and re-attempts generation or scheduling. The dashboard does not call pipeline code directly — it only resets state. For social account token issues, "Reconnect" is a placeholder link that navigates the operator to the platform's auth page (manual re-auth for MVP).
+
+**Dismiss mechanism:** Since ContentItem and SocialAccount schemas don't have a `dismissedAt` column, dismissed issue IDs are tracked in a lightweight `dismissed_issues` table in hum-core: `{ id, entity_type ('content_item' | 'social_account'), entity_id, dismissed_at, snooze_until? }`. This avoids polluting the core models with dashboard-specific concerns. The `/api/issues` route excludes dismissed IDs from results. Note: `snooze_until` is included in the schema for forward-compatibility but is unused in MVP (the only snooze-able issue type, "Token Expiring Soon", is deferred). No snooze UI logic needed for MVP.
+
+**Token expiry detection:** The SocialAccount model currently has no `expiresAt` field. For MVP, "Token Expiring Soon" is deferred — the Issues page only surfaces tokens that are already expired/disconnected (status field). Token expiry warnings will be added when the social account model gains an expiration timestamp.
 
 ## Shared Layout
 
@@ -134,8 +142,8 @@ Sidebar is a server component. Issue badge is a client component with its own po
 | `PATCH /api/content/[id]` | PATCH | Update content item (pause → draft) | `contentItemRepo.update()` |
 | `DELETE /api/content/[id]` | DELETE | Remove content item | `contentItemRepo.remove()` |
 | `GET /api/issues` | GET | Aggregate failed content + expired tokens | `contentItemRepo` + `socialAccountRepo` |
-| `POST /api/issues/[id]/retry` | POST | Retry failed content or refresh token | Pipeline-specific |
-| `POST /api/issues/[id]/dismiss` | POST | Mark issue acknowledged | `contentItemRepo.update()` |
+| `POST /api/issues/[id]/retry` | POST | Reset failed content item status to `draft` for re-processing | `contentItemRepo.update()` |
+| `POST /api/issues/[id]/dismiss` | POST | Mark issue acknowledged | `dismissed_issues` table |
 | `GET /api/media/[...path]` | GET | Stream media file from local storage | `fs.createReadStream()` |
 | `GET /api/fleet/stats` | GET | Aggregated counts for fleet overview | Multiple repos |
 
@@ -286,9 +294,9 @@ This lets the dashboard be developed and demoed independently of the real pipeli
 
 ## Dependencies on Other Packages
 
-- **hum-core** — all database models and repositories (Client, BrandProfile, ContentItem, SocialAccount, onboarding_sessions)
-- **hum-onboarding** — onboarding_sessions schema must be merged into hum-core before dashboard can show onboarding progress
-- **hum-content-engine** — content items and local media storage must follow the expected schema for the dashboard to display them
+- **hum-core** — all database models and repositories (Client, BrandProfile, ContentItem, SocialAccount, onboarding_sessions). Also requires a new `dismissed_issues` table for the issues dismiss/snooze mechanism, and filter extensions on `contentItemRepo.list()` and a `listAll()` on `socialAccountRepo`.
+- **hum-onboarding** — onboarding_sessions schema must be merged into hum-core before dashboard can show onboarding progress. If the onboarding branch is not yet merged when dashboard development begins, the onboarding progress component will be stubbed (show "Onboarding data unavailable" for clients with `status: 'onboarding'`) and wired up once the schema lands.
+- **hum-content-engine** — content items and local media storage must follow the expected schema for the dashboard to display them. The `contentItemRepo.list()` method will need filter extensions: `limit`, `offset`, `dateRange` (before/after), `status` (single or array), and `clientId`. These are straightforward additions to hum-core.
 
 ## Depended On By
 
