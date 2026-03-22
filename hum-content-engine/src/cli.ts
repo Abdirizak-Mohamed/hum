@@ -21,6 +21,20 @@ const useMock = hasFlag('--mock');
 const dryRun = hasFlag('--dry-run');
 
 async function main() {
+  if (!command || command === 'help' || command === '--help') {
+    console.log(`hum-content-engine CLI
+
+Commands:
+  generate --client <id>   Run pipeline for one client
+  generate --all           Run pipeline for all active clients
+  start                    Start the cron scheduler
+
+Options:
+  --dry-run                Generate content but don't schedule
+  --mock                   Force mock integrations`);
+    process.exit(0);
+  }
+
   const humDb = createDb(process.env.DATABASE_URL);
   const ai = createAiClient({ mock: useMock });
   const social = createSocialClient({ mock: useMock });
@@ -80,17 +94,8 @@ async function main() {
     }
 
     default:
-      console.log(`hum-content-engine CLI
-
-Commands:
-  generate --client <id>   Run pipeline for one client
-  generate --all           Run pipeline for all active clients
-  start                    Start the cron scheduler
-
-Options:
-  --dry-run                Generate content but don't schedule
-  --mock                   Force mock integrations`);
-      process.exit(0);
+      logger.error(`Unknown command: ${command}`);
+      process.exit(1);
   }
 }
 
