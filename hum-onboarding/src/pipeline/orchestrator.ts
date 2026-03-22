@@ -16,7 +16,8 @@ export async function runPipeline(
 
     try {
       const result = await step.execute(ctx);
-      await sessionRepo.saveStepResult(ctx.db, sessionId, step.name, result);
+      const updated = await sessionRepo.saveStepResult(ctx.db, sessionId, step.name, result);
+      ctx = { ...ctx, session: updated };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       await sessionRepo.saveStepResult(ctx.db, sessionId, step.name, {
