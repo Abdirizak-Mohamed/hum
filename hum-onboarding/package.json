@@ -1,0 +1,23 @@
+{
+  "name": "hum-onboarding",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "hum-core": "workspace:*",
+    "hum-integrations": "workspace:*",
+    "zod": "^3.24.0",
+    "uuidv7": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
