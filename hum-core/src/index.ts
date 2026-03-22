@@ -1,6 +1,6 @@
 // Database
 export { createDb, type HumDb } from './db/connection.js';
-export { clients, brandProfiles, socialAccounts, contentItems } from './db/schema.js';
+export { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions } from './db/schema.js';
 
 // Models
 export { Client, type ClientRow } from './models/client.js';
@@ -17,6 +17,7 @@ export {
   brandProfileSchema, createBrandProfileSchema, updateBrandProfileSchema,
   socialAccountSchema, createSocialAccountSchema, updateSocialAccountSchema,
   contentItemSchema, createContentItemSchema, updateContentItemSchema,
+  onboardingSessionSchema, createOnboardingSessionSchema, updateOnboardingSessionSchema,
 } from './schemas/index.js';
 
 // Config

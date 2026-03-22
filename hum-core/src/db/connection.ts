@@ -91,5 +91,18 @@ function pushSchema(sqlite: InstanceType<typeof Database>) {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS onboarding_sessions (
+      id TEXT PRIMARY KEY,
+      client_id TEXT NOT NULL UNIQUE REFERENCES clients(id),
+      status TEXT NOT NULL DEFAULT 'in_progress',
+      current_step TEXT,
+      step_results TEXT DEFAULT '{}',
+      intake_data TEXT,
+      blocked_reason TEXT,
+      started_at INTEGER NOT NULL,
+      completed_at INTEGER,
+      updated_at INTEGER NOT NULL
+    );
   `);
 }

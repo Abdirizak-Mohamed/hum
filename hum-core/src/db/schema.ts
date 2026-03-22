@@ -82,3 +82,18 @@ export const contentItems = sqliteTable('content_items', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
+
+// ── OnboardingSession ──────────────────────────────────
+
+export const onboardingSessions = sqliteTable('onboarding_sessions', {
+  id: text('id').primaryKey(),
+  clientId: text('client_id').notNull().references(() => clients.id).unique(),
+  status: text('status', { enum: ['in_progress', 'complete', 'failed'] }).notNull().default('in_progress'),
+  currentStep: text('current_step'),
+  stepResults: text('step_results', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
+  intakeData: text('intake_data', { mode: 'json' }).$type<Record<string, unknown>>(),
+  blockedReason: text('blocked_reason'),
+  startedAt: integer('started_at', { mode: 'timestamp_ms' }).notNull(),
+  completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
