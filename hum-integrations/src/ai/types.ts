@@ -2,6 +2,7 @@ export type CopyPrompt = {
   systemPrompt: string;
   userPrompt: string;
   maxTokens?: number;
+  model?: string;
 };
 
 export type CopyResult = {

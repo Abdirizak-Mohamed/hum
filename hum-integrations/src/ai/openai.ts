@@ -12,7 +12,7 @@ export class OpenAiProvider {
   async generateCopy(prompt: CopyPrompt): Promise<CopyResult> {
     try {
       const response = await this.client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: prompt.model ?? 'gpt-4o-mini',
         messages: [
           { role: 'system', content: prompt.systemPrompt },
           { role: 'user', content: prompt.userPrompt },
