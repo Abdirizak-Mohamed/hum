@@ -36,7 +36,7 @@ export async function generateMedia(
     queue.add(async () => {
       try {
         const primaryPlatform = post.platforms[0];
-        const imagePrompt = buildImagePrompt(post, brand, primaryPlatform);
+        const imagePrompt = buildImagePrompt({ ...post, menuItem: post.menuItem ?? null }, brand, primaryPlatform);
         const imageResult = await ai.generateImage(imagePrompt);
 
         if (imageResult.imageUrls.length === 0) {

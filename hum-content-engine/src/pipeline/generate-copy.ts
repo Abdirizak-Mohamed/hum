@@ -53,7 +53,7 @@ export async function generateCopy(
   const promises = tasks.map(({ post, platform }, index) =>
     queue.add(async () => {
       try {
-        const prompt = buildCopyPrompt(post, brand, platform);
+        const prompt = buildCopyPrompt({ ...post, menuItem: post.menuItem ?? null }, brand, platform);
         const result = await ai.generateCopy({ ...prompt, model: config.models.copy });
         const parsed = copyResultSchema.parse(JSON.parse(result.text));
 
