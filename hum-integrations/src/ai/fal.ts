@@ -12,7 +12,7 @@ export class FalProvider {
 
   async generateImage(prompt: ImagePrompt): Promise<ImageResult> {
     try {
-      const result = await fal.subscribe<FalResult>('fal-ai/flux-pro/v1.1', {
+      const result = await fal.subscribe<Record<string, unknown>, FalResult>('fal-ai/flux-pro/v1.1', {
         input: {
           prompt: prompt.prompt,
           image_size: prompt.imageSize ?? 'square_hd',

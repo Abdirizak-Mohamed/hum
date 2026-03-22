@@ -26,4 +26,18 @@ describe('createPaymentsClient', () => {
     const event = client.constructWebhookEvent('{}', 'sig');
     expect(event.type).toEqual(expect.any(String));
   });
+
+  it('returns mock client when HUM_MOCK_INTEGRATIONS is set', async () => {
+    const original = process.env.HUM_MOCK_INTEGRATIONS;
+    process.env.HUM_MOCK_INTEGRATIONS = 'true';
+
+    const client = createPaymentsClient();
+    const customer = await client.createCustomer({
+      email: 'test@test.com',
+      name: 'Test',
+    });
+    expect(customer.id).toEqual(expect.any(String));
+
+    process.env.HUM_MOCK_INTEGRATIONS = original;
+  });
 });

@@ -91,12 +91,15 @@ export class StripeProvider implements PaymentsClient {
         data: event.data.object as unknown as Record<string, unknown>,
       };
     } catch (error) {
-      throw new IntegrationError({
-        provider: 'stripe',
-        code: IntegrationErrorCode.INVALID_INPUT,
-        message: error instanceof Error ? error.message : 'Invalid webhook signature',
-        providerError: error,
-      });
+      if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
+        throw new IntegrationError({
+          provider: 'stripe',
+          code: IntegrationErrorCode.INVALID_INPUT,
+          message: error.message,
+          providerError: error,
+        });
+      }
+      throw this.mapError(error);
     }
   }
 
