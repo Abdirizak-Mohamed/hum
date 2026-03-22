@@ -3,3 +3,4 @@ packages:
   - "hum-integrations"
   - "hum-content-engine"
   - "hum-onboarding"
+  - "hum-dashboard"
