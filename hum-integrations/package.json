@@ -1,0 +1,24 @@
+{
+  "name": "hum-integrations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "hum-core": "workspace:*",
+    "openai": "^4.77.0",
+    "@fal-ai/serverless-client": "^0.15.0",
+    "stripe": "^17.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "msw": "^2.7.0"
+  }
+}

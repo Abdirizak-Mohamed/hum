@@ -25,7 +25,7 @@ export async function create(
   const now = new Date();
   const id = uuidv7();
 
-  db.insert(contentItems)
+  await db.insert(contentItems)
     .values({
       id,
       clientId: data.clientId,
@@ -44,12 +44,12 @@ export async function create(
     })
     .run();
 
-  const row = db.select().from(contentItems).where(eq(contentItems.id, id)).get();
+  const row = await db.select().from(contentItems).where(eq(contentItems.id, id)).get();
   return new ContentItem(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<ContentItem | undefined> {
-  const row = db.select().from(contentItems).where(eq(contentItems.id, id)).get();
+  const row = await db.select().from(contentItems).where(eq(contentItems.id, id)).get();
   return row ? new ContentItem(row) : undefined;
 }
 
@@ -63,8 +63,8 @@ export async function list(
   if (filters?.contentType) conditions.push(eq(contentItems.contentType, filters.contentType as any));
 
   const rows = conditions.length
-    ? db.select().from(contentItems).where(and(...conditions)).all()
-    : db.select().from(contentItems).all();
+    ? await db.select().from(contentItems).where(and(...conditions)).all()
+    : await db.select().from(contentItems).all();
 
   return rows.map((row) => new ContentItem(row));
 }
@@ -85,16 +85,16 @@ export async function update(
     performance: { reach: number; impressions: number; engagement: number; clicks: number };
   }>,
 ): Promise<ContentItem> {
-  db.update(contentItems)
+  await db.update(contentItems)
     .set({ ...data, updatedAt: new Date() })
     .where(eq(contentItems.id, id))
     .run();
 
-  const row = db.select().from(contentItems).where(eq(contentItems.id, id)).get();
+  const row = await db.select().from(contentItems).where(eq(contentItems.id, id)).get();
   if (!row) throw new NotFoundError('ContentItem', id);
   return new ContentItem(row);
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  db.delete(contentItems).where(eq(contentItems.id, id)).run();
+  await db.delete(contentItems).where(eq(contentItems.id, id)).run();
 }
