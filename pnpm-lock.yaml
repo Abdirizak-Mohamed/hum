@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      hum-core:
+        specifier: workspace:*
+        version: link:hum-core
     devDependencies:
       concurrently:
         specifier: ^9.2.1

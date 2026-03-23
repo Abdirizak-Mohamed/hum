@@ -8,6 +8,9 @@
     "generate": "node --import tsx hum-content-engine/src/cli.ts generate",
     "seed": "node --import tsx scripts/seed.ts"
   },
+  "dependencies": {
+    "hum-core": "workspace:*"
+  },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "tsx": "^4.21.0"
