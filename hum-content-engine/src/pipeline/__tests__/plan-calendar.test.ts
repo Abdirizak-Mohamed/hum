@@ -68,7 +68,7 @@ describe('planCalendar', () => {
     const result = await planCalendar(mockClient, mockBrandProfile, {
       ai,
       config: mockConfig,
-      platforms: ['instagram', 'facebook'],
+      platforms: ['instagram', 'facebook', 'google_business'],
       postsPerWeek: 3,
       recentMenuItemNames: [],
     });
@@ -128,7 +128,7 @@ describe('planCalendar', () => {
     const result = await planCalendar(mockClient, mockBrandProfile, {
       ai,
       config: mockConfig,
-      platforms: ['instagram', 'facebook'],
+      platforms: ['instagram', 'facebook', 'google_business'],
       postsPerWeek: 3,
       recentMenuItemNames: [],
     });

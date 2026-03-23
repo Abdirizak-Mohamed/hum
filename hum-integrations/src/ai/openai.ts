@@ -18,6 +18,7 @@ export class OpenAiProvider {
           { role: 'user', content: prompt.userPrompt },
         ],
         max_tokens: prompt.maxTokens,
+        response_format: { type: 'json_object' },
       });
 
       const text = response.choices[0]?.message?.content ?? '';

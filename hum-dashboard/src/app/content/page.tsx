@@ -7,7 +7,15 @@ import { ContentPreviewModal } from '@/components/content-preview-modal';
 import type { ContentItem } from '@/lib/api';
 
 const PLATFORMS = ['instagram', 'facebook', 'google_business'];
+const STATUSES = [
+  { value: '', label: 'All Statuses' },
+  { value: 'scheduled', label: 'Scheduled' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'posted', label: 'Posted' },
+  { value: 'failed', label: 'Failed' },
+];
 const RANGES = [
+  { value: '', label: 'All time' },
   { value: '24h', label: '24 hours' },
   { value: '7d', label: '7 days' },
   { value: '30d', label: '30 days' },
@@ -44,13 +52,15 @@ function groupByDate(items: ContentItem[]): Array<{ date: string; label: string;
 export default function ContentPage() {
   const [clientId, setClientId] = useState('');
   const [platform, setPlatform] = useState('');
-  const [range, setRange] = useState('7d');
+  const [status, setStatus] = useState('');
+  const [range, setRange] = useState('');
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
 
   const params = {
     clientId: clientId || undefined,
     platform: platform || undefined,
-    range,
+    status: status || undefined,
+    range: range || undefined,
   };
 
   const { data: contentItems, isLoading, isError } = useContent(params);
@@ -95,6 +105,19 @@ export default function ContentPage() {
           ))}
         </select>
 
+        {/* Status filter */}
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 focus:border-blue-500 focus:outline-none"
+        >
+          {STATUSES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+
         {/* Range filter */}
         <select
           value={range}
@@ -120,7 +143,7 @@ export default function ContentPage() {
         </div>
       ) : grouped.length === 0 ? (
         <div className="flex items-center justify-center min-h-40">
-          <p className="text-gray-500">No scheduled content for this period.</p>
+          <p className="text-gray-500">No content found for the selected filters.</p>
         </div>
       ) : (
         <div className="space-y-6">

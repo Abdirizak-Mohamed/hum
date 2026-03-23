@@ -23,7 +23,7 @@ export const defaultConfig: ContentEngineConfig = {
     copy: 'gpt-4o-mini',
   },
   storage: {
-    basePath: './media',
+    basePath: process.env.MEDIA_STORAGE_PATH ?? './media',
   },
   concurrency: {
     mediaGeneration: 3,

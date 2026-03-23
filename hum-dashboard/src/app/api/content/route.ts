@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const clientId = searchParams.get('clientId') ?? undefined;
-    const status = searchParams.get('status') ?? 'scheduled';
+    const status = searchParams.get('status') || undefined;
     const platform = searchParams.get('platform') ?? undefined;
     const range = searchParams.get('range') ?? undefined;
 

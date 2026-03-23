@@ -78,19 +78,19 @@ export async function planCalendar(
       ? { ...prompt, model: config.models.planning }
       : {
           systemPrompt: prompt.systemPrompt,
-          userPrompt: `Your previous response was invalid JSON: ${String(lastError)}. Please fix and return ONLY a valid JSON array.`,
+          userPrompt: `${prompt.userPrompt}\n\nYour previous response was invalid: ${String(lastError)}. Please fix and return ONLY valid JSON as { "posts": [...] }.`,
           model: config.models.planning,
         };
 
     const result = await ai.generateCopy(callPrompt);
 
     try {
-      const parsed = calendarSchema.parse(JSON.parse(result.text));
+      const json = JSON.parse(result.text);
+      const postsArray = Array.isArray(json) ? json : json.posts;
+      const parsed = calendarSchema.parse(postsArray);
       posts = parsed.map((post) => ({
         ...post,
-        platforms: post.contentType === 'google_post'
-          ? post.platforms as Platform[]
-          : post.platforms.filter((p) => platforms.includes(p as Platform)) as Platform[],
+        platforms: post.platforms.filter((p) => platforms.includes(p as Platform)) as Platform[],
       })).filter((post) => post.platforms.length > 0);
 
       const today = new Date().toISOString().split('T')[0];

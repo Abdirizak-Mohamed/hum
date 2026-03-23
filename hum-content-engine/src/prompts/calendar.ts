@@ -1,6 +1,5 @@
 import type { Platform, MenuItem } from 'hum-core';
 import type { CopyPrompt } from 'hum-integrations';
-import { formatMenuItems } from './utils.js';
 
 type CalendarPromptInput = {
   postsPerWeek: number;
@@ -26,17 +25,31 @@ export function buildCalendarPrompt(
   brand: BrandInfo,
   input: CalendarPromptInput,
 ): CopyPrompt {
+  const contentTypes = ['food_hero', 'deal_offer'];
+  if (input.platforms.includes('google_business')) {
+    contentTypes.push('google_post');
+  }
+
   const systemPrompt = [
     'You are a social media strategist for restaurants and takeaways.',
     'Plan a content calendar for the next 7 days.',
     `Create exactly ${input.postsPerWeek} posts for the week.`,
-    'Content types available: food_hero, deal_offer, google_post.',
+    `Content types available: ${contentTypes.join(', ')}.`,
+    `Available platforms: ${input.platforms.join(', ')}. ONLY use these platforms.`,
     'Vary content types, menu items, and themes across the week.',
-    'Return ONLY valid JSON: an array of objects with fields: date (ISO string YYYY-MM-DD), contentType, platforms (array), menuItem (object with name/description/category/price or null), theme, brief.',
+    'IMPORTANT: The menuItem field MUST use items from the provided menu EXACTLY as listed — do not invent dishes. Use the exact name, description, category, and price. Set menuItem to null only for deal_offer posts about general promotions.',
+    'Return ONLY valid JSON as an object: { "posts": [...] } where each post has fields: date (ISO string YYYY-MM-DD), contentType, platforms (array), menuItem (object with name/description/category/price or null), theme, brief.',
   ].join('\n');
 
   const today = new Date().toISOString().split('T')[0];
   const dayOfWeek = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
+
+  const menuJson = brand.menuItems.map((item) => ({
+    name: item.name,
+    description: item.description,
+    category: item.category,
+    price: item.price,
+  }));
 
   const parts: string[] = [
     `Business: ${client.businessName}`,
@@ -45,8 +58,8 @@ export function buildCalendarPrompt(
     '',
     `Available platforms: ${input.platforms.join(', ')}`,
     '',
-    'Menu items:',
-    formatMenuItems(brand.menuItems) || '(No menu items provided)',
+    'MENU (use ONLY these items for the menuItem field — copy name, description, category, and price exactly):',
+    JSON.stringify(menuJson, null, 2),
     '',
     `Brand voice: ${brand.brandVoiceGuide ?? 'Friendly and approachable'}`,
     `Content themes: ${brand.contentThemes.join(', ') || 'General food content'}`,

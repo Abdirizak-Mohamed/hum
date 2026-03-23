@@ -48,7 +48,7 @@ export function buildCopyPrompt(
     'You write social media captions for restaurants and takeaways.',
     injectBrandVoice(brand.brandVoiceGuide),
     platformInstructions,
-    'Return ONLY valid JSON with fields: caption (string), hashtags (string[]), cta (string).',
+    'Return ONLY valid JSON (no markdown, no code fences) with fields: caption (string), hashtags (string[]), cta (string).',
   ].join('\n');
 
   const parts: string[] = [
