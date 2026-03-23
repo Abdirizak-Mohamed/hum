@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "pnpm --filter hum-core build && pnpm --filter hum-integrations build && concurrently -n core,intg,dash -c blue,cyan,green \"pnpm --filter hum-core build:watch\" \"pnpm --filter hum-integrations build:watch\" \"pnpm --filter hum-dashboard dev\"",
     "build": "pnpm -r build",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "generate": "node --import tsx hum-content-engine/src/cli.ts generate",
+    "seed": "node --import tsx scripts/seed.ts"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
