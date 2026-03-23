@@ -6,7 +6,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "generate": "node --import tsx hum-content-engine/src/cli.ts generate",
-    "seed": "node --import tsx scripts/seed.ts"
+    "seed": "node --import tsx scripts/seed.ts",
+    "onboard": "node --import tsx hum-onboarding/src/cli.ts"
   },
   "dependencies": {
     "hum-core": "workspace:*"
