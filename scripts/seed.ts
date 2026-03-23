@@ -12,8 +12,7 @@ import {
 } from 'hum-core';
 
 async function seed() {
-  const { db, migrate } = createDb();
-  migrate();
+  const { db } = createDb();
 
   console.log('🌱  Running seed...\n');
 

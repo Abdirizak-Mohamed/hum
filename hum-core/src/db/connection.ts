@@ -12,18 +12,16 @@ export function createDb(url: string = process.env.DATABASE_URL || './hum.db') {
 
   const db = drizzle(sqlite, { schema });
 
-  // For in-memory databases, push the schema directly
   if (url === ':memory:') {
     pushSchema(sqlite);
+  } else {
+    migrate(db, { migrationsFolder: new URL('./migrations', import.meta.url).pathname });
   }
 
   return {
     db,
     close() {
       sqlite.close();
-    },
-    migrate() {
-      migrate(db, { migrationsFolder: new URL('./migrations', import.meta.url).pathname });
     },
   };
 }
