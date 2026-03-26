@@ -8,7 +8,7 @@ let humDb: HumDb;
 let clientId: string;
 
 beforeEach(async () => {
-  humDb = createDb(':memory:');
+  humDb = await createDb();
   const client = await clientRepo.create(humDb.db, {
     businessName: "Ali's Kebabs",
     email: 'ali@kebabs.com',
@@ -16,8 +16,8 @@ beforeEach(async () => {
   clientId = client.id;
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 describe('contentItemRepo', () => {
@@ -68,7 +68,7 @@ describe('contentItemRepo', () => {
       const updated = await contentItemRepo.update(humDb.db, item.id, {
         caption: 'New caption',
         status: 'scheduled',
-        scheduledAt: new Date(),
+        scheduledAt: Date.now(),
       });
       expect(updated.caption).toBe('New caption');
       expect(updated.status).toBe('scheduled');
