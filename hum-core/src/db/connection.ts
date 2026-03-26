@@ -102,5 +102,17 @@ function pushSchema(sqlite: InstanceType<typeof Database>) {
       completed_at INTEGER,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS portal_users (
+      id TEXT PRIMARY KEY,
+      client_id TEXT REFERENCES clients(id),
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending_intake',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      last_login_at INTEGER
+    );
   `);
 }

@@ -97,3 +97,16 @@ export const onboardingSessions = sqliteTable('onboarding_sessions', {
   completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
+
+// ── PortalUser ─────────────────────────────────────────
+export const portalUsers = sqliteTable('portal_users', {
+  id: text('id').primaryKey(),
+  clientId: text('client_id').references(() => clients.id),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  name: text('name').notNull(),
+  status: text('status', { enum: ['pending_intake', 'pending_approval', 'active', 'suspended'] }).notNull().default('pending_intake'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+});

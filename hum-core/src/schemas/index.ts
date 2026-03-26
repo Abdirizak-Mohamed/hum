@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions } from '../db/schema.js';
+import { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions, portalUsers } from '../db/schema.js';
 
 // Update schemas use createSelectSchema (not createInsertSchema) to avoid
 // insert defaults (e.g., planTier defaulting to 'starter') leaking into
@@ -79,5 +79,20 @@ export const updateOnboardingSessionSchema = createSelectSchema(onboardingSessio
   id: true,
   clientId: true,
   startedAt: true,
+  updatedAt: true,
+}).partial();
+
+// ── PortalUser schemas ─────────────────────────────────
+
+export const portalUserSchema = createSelectSchema(portalUsers);
+export const createPortalUserSchema = createInsertSchema(portalUsers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+});
+export const updatePortalUserSchema = createSelectSchema(portalUsers).omit({
+  id: true,
+  createdAt: true,
   updatedAt: true,
 }).partial();
