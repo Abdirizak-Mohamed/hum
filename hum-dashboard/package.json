@@ -9,27 +9,29 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "^15.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "@aws-sdk/client-s3": "^3.1018.0",
+    "@aws-sdk/s3-request-presigner": "^3.1018.0",
     "@tanstack/react-query": "^5.60.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "tailwind-merge": "^2.6.0",
-    "lucide-react": "^0.460.0",
     "hum-core": "workspace:*",
     "hum-onboarding": "workspace:*",
-    "hum-integrations": "workspace:*"
+    "hum-integrations": "workspace:*",
+    "lucide-react": "^0.460.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/react": "^19.0.0",
     "@types/node": "^22.0.0",
-    "tailwindcss": "^3.4.0",
-    "postcss": "^8.4.0",
+    "@types/react": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
     "tsx": "^4.19.0",
-    "vitest": "^3.0.0",
-    "@vitejs/plugin-react": "^4.3.0"
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
   }
 }
