@@ -11,6 +11,7 @@ export { schedulePosts } from './pipeline/schedule-posts.js';
 // Storage
 export { type StorageClient } from './storage/types.js';
 export { LocalStorageClient } from './storage/local.js';
+export { S3StorageClient } from './storage/s3.js';
 
 // Config
 export { type ContentEngineConfig, defaultConfig } from './config.js';

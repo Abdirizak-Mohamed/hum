@@ -12,16 +12,18 @@
     "content-engine": "node --import tsx src/cli.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1018.0",
+    "@aws-sdk/s3-request-presigner": "^3.1018.0",
     "hum-core": "workspace:*",
     "hum-integrations": "workspace:*",
-    "p-queue": "^8.0.0",
     "node-cron": "^3.0.0",
+    "p-queue": "^8.0.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
+    "@types/node-cron": "^3.0.0",
     "tsx": "^4.0.0",
-    "@types/node-cron": "^3.0.0"
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
   }
 }
