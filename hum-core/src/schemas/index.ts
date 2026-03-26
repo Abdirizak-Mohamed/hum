@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions, portalUsers, clientUploads } from '../db/schema.js';
+import { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions, portalUsers, clientUploads, intakeSubmissions } from '../db/schema.js';
 
 // Update schemas use createSelectSchema (not createInsertSchema) to avoid
 // insert defaults (e.g., planTier defaulting to 'starter') leaking into
@@ -114,6 +114,25 @@ export const updateClientUploadSchema = createSelectSchema(clientUploads).omit({
   mimeType: true,
   sizeBytes: true,
   category: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
+
+// ── IntakeSubmission schemas ─────────────────────────
+
+export const intakeSubmissionSchema = createSelectSchema(intakeSubmissions);
+export const createIntakeSubmissionSchema = createInsertSchema(intakeSubmissions).omit({
+  id: true,
+  status: true,
+  submittedAt: true,
+  reviewedAt: true,
+  reviewNotes: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const updateIntakeSubmissionSchema = createSelectSchema(intakeSubmissions).omit({
+  id: true,
+  portalUserId: true,
   createdAt: true,
   updatedAt: true,
 }).partial();

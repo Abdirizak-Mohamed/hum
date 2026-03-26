@@ -127,5 +127,25 @@ function pushSchema(sqlite: InstanceType<typeof Database>) {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS intake_submissions (
+      id TEXT PRIMARY KEY,
+      portal_user_id TEXT NOT NULL UNIQUE REFERENCES portal_users(id),
+      business_name TEXT NOT NULL,
+      address TEXT,
+      phone TEXT,
+      opening_hours TEXT,
+      menu_data TEXT,
+      menu_upload_ids TEXT DEFAULT '[]',
+      food_photo_upload_ids TEXT DEFAULT '[]',
+      social_links TEXT,
+      brand_preferences TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      submitted_at INTEGER,
+      reviewed_at INTEGER,
+      review_notes TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `);
 }
