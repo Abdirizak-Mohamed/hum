@@ -7,3 +7,4 @@ dist/
 .next
 .superpowers
 media/
+.worktrees/
