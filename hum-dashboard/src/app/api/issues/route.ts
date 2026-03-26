@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clientRepo, socialAccountRepo, contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { isDismissed } from '@/lib/dismissed-issues';
 import type { IssueItem } from '@/types';
 
 export async function GET(req: NextRequest) {
   try {
+    const db = await getDb();
     const { searchParams } = req.nextUrl;
     const countOnly = searchParams.get('countOnly') === 'true';
     const typeFilter = searchParams.get('type') ?? undefined;

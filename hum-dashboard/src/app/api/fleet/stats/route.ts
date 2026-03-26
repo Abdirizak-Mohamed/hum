@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { clientRepo, socialAccountRepo, contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import type { FleetStats, ContentSummary, IssueItem } from '@/types';
 
 export async function GET() {
   try {
+    const db = await getDb();
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 

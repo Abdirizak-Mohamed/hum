@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clientRepo, contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 const RANGE_MAP: Record<string, number> = {
   '24h': 24 * 60 * 60 * 1000,
@@ -10,6 +10,7 @@ const RANGE_MAP: Record<string, number> = {
 
 export async function GET(req: NextRequest) {
   try {
+    const db = await getDb();
     const { searchParams } = req.nextUrl;
     const clientId = searchParams.get('clientId') ?? undefined;
     const status = searchParams.get('status') || undefined;

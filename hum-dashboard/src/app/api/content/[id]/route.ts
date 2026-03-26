@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
+    const db = await getDb();
     const { id } = await params;
     const body = await req.json() as { status?: string };
 
@@ -26,6 +27,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
 export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   try {
+    const db = await getDb();
     const { id } = await params;
     await contentItemRepo.remove(db, id);
     return NextResponse.json({ ok: true });

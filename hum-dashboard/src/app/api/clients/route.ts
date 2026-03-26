@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { clientRepo, socialAccountRepo, contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import type { ClientListItem } from '@/types';
 
 export async function GET() {
   try {
+    const db = await getDb();
     const clients = await clientRepo.list(db);
 
     const items: ClientListItem[] = await Promise.all(
