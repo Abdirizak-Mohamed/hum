@@ -110,3 +110,17 @@ export const portalUsers = sqliteTable('portal_users', {
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
 });
+
+// ── ClientUpload ───────────────────────────────────────
+export const clientUploads = sqliteTable('client_uploads', {
+  id: text('id').primaryKey(),
+  portalUserId: text('portal_user_id').notNull().references(() => portalUsers.id),
+  filename: text('filename').notNull(),
+  storagePath: text('storage_path').notNull(),
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  category: text('category', { enum: ['food_photo', 'menu', 'logo', 'interior', 'other'] }).notNull(),
+  status: text('status', { enum: ['pending', 'used', 'archived'] }).notNull().default('pending'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});

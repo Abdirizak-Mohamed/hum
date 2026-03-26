@@ -114,5 +114,18 @@ function pushSchema(sqlite: InstanceType<typeof Database>) {
       updated_at INTEGER NOT NULL,
       last_login_at INTEGER
     );
+
+    CREATE TABLE IF NOT EXISTS client_uploads (
+      id TEXT PRIMARY KEY,
+      portal_user_id TEXT NOT NULL REFERENCES portal_users(id),
+      filename TEXT NOT NULL,
+      storage_path TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size_bytes INTEGER NOT NULL,
+      category TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `);
 }
