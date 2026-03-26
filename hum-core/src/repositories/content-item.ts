@@ -1,12 +1,11 @@
 import { eq, and, type SQL } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { HumDb } from '../db/connection.js';
 import { contentItems } from '../db/schema.js';
 import { ContentItem } from '../models/content-item.js';
 import { NotFoundError } from '../utils/errors.js';
-import type * as schema from '../db/schema.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 export async function create(
   db: Db,
@@ -19,10 +18,10 @@ export async function create(
     mediaUrls?: string[];
     platforms?: string[];
     status?: 'draft' | 'scheduled' | 'posted' | 'failed';
-    scheduledAt?: Date;
+    scheduledAt?: number;
   },
 ): Promise<ContentItem> {
-  const now = new Date();
+  const now = Date.now();
   const id = uuidv7();
 
   await db.insert(contentItems)
@@ -42,14 +41,14 @@ export async function create(
       createdAt: now,
       updatedAt: now,
     })
-    .run();
+    .execute();
 
-  const row = await db.select().from(contentItems).where(eq(contentItems.id, id)).get();
+  const row = (await db.select().from(contentItems).where(eq(contentItems.id, id)))[0];
   return new ContentItem(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<ContentItem | undefined> {
-  const row = await db.select().from(contentItems).where(eq(contentItems.id, id)).get();
+  const row = (await db.select().from(contentItems).where(eq(contentItems.id, id)))[0];
   return row ? new ContentItem(row) : undefined;
 }
 
@@ -63,8 +62,8 @@ export async function list(
   if (filters?.contentType) conditions.push(eq(contentItems.contentType, filters.contentType as any));
 
   const rows = conditions.length
-    ? await db.select().from(contentItems).where(and(...conditions)).all()
-    : await db.select().from(contentItems).all();
+    ? await db.select().from(contentItems).where(and(...conditions))
+    : await db.select().from(contentItems);
 
   return rows.map((row) => new ContentItem(row));
 }
@@ -80,21 +79,21 @@ export async function update(
     cta: string;
     mediaUrls: string[];
     platforms: string[];
-    scheduledAt: Date;
-    postedAt: Date;
+    scheduledAt: number;
+    postedAt: number;
     performance: { reach: number; impressions: number; engagement: number; clicks: number };
   }>,
 ): Promise<ContentItem> {
   await db.update(contentItems)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: Date.now() })
     .where(eq(contentItems.id, id))
-    .run();
+    .execute();
 
-  const row = await db.select().from(contentItems).where(eq(contentItems.id, id)).get();
+  const row = (await db.select().from(contentItems).where(eq(contentItems.id, id)))[0];
   if (!row) throw new NotFoundError('ContentItem', id);
   return new ContentItem(row);
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  await db.delete(contentItems).where(eq(contentItems.id, id)).run();
+  await db.delete(contentItems).where(eq(contentItems.id, id)).execute();
 }

@@ -1,12 +1,11 @@
 import { eq } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { HumDb } from '../db/connection.js';
 import { brandProfiles } from '../db/schema.js';
 import { BrandProfile } from '../models/brand-profile.js';
 import { NotFoundError } from '../utils/errors.js';
-import type * as schema from '../db/schema.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 export async function create(
   db: Db,
@@ -29,7 +28,7 @@ export async function create(
     logoUrl?: string;
   },
 ): Promise<BrandProfile> {
-  const now = new Date();
+  const now = Date.now();
   const id = uuidv7();
 
   await db.insert(brandProfiles)
@@ -48,19 +47,19 @@ export async function create(
       generatedAt: now,
       updatedAt: now,
     })
-    .run();
+    .execute();
 
-  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
+  const row = (await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)))[0];
   return new BrandProfile(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<BrandProfile | undefined> {
-  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
+  const row = (await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)))[0];
   return row ? new BrandProfile(row) : undefined;
 }
 
 export async function getByClientId(db: Db, clientId: string): Promise<BrandProfile | undefined> {
-  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.clientId, clientId)).get();
+  const row = (await db.select().from(brandProfiles).where(eq(brandProfiles.clientId, clientId)))[0];
   return row ? new BrandProfile(row) : undefined;
 }
 
@@ -86,15 +85,15 @@ export async function update(
   }>,
 ): Promise<BrandProfile> {
   await db.update(brandProfiles)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: Date.now() })
     .where(eq(brandProfiles.id, id))
-    .run();
+    .execute();
 
-  const row = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)).get();
+  const row = (await db.select().from(brandProfiles).where(eq(brandProfiles.id, id)))[0];
   if (!row) throw new NotFoundError('BrandProfile', id);
   return new BrandProfile(row);
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  await db.delete(brandProfiles).where(eq(brandProfiles.id, id)).run();
+  await db.delete(brandProfiles).where(eq(brandProfiles.id, id)).execute();
 }
