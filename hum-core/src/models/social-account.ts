@@ -16,7 +16,7 @@ export class SocialAccount {
     this.platformAccountId = row.platformAccountId;
     this.ayrshareProfileKey = row.ayrshareProfileKey;
     this.status = row.status;
-    this.createdAt = row.createdAt; this.connectedAt = row.connectedAt; this.updatedAt = row.updatedAt;
+    this.createdAt = new Date(row.createdAt); this.connectedAt = row.connectedAt ? new Date(row.connectedAt) : null; this.updatedAt = new Date(row.updatedAt);
   }
 
   isConnected(): boolean { return this.status === 'connected'; }

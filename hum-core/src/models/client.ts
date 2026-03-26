@@ -33,8 +33,8 @@ export class Client {
     this.planTier = row.planTier as PlanTier;
     this.stripeCustomerId = row.stripeCustomerId;
     this.status = row.status;
-    this.createdAt = row.createdAt;
-    this.updatedAt = row.updatedAt;
+    this.createdAt = new Date(row.createdAt);
+    this.updatedAt = new Date(row.updatedAt);
   }
 
   isActive(): boolean { return this.status === 'active'; }

@@ -25,7 +25,7 @@ export class BrandProfile {
     this.menuItems = (row.menuItems ?? []) as MenuItem[];
     this.brandColours = row.brandColours ?? [];
     this.logoUrl = row.logoUrl;
-    this.generatedAt = row.generatedAt; this.updatedAt = row.updatedAt;
+    this.generatedAt = new Date(row.generatedAt); this.updatedAt = new Date(row.updatedAt);
   }
 
   addMenuItem(item: MenuItem): void { this.menuItems.push(item); }
