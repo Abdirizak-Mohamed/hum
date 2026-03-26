@@ -34,7 +34,7 @@ Options:
     process.exit(0);
   }
 
-  const humDb = createDb(process.env.DATABASE_URL);
+  const humDb = await createDb(process.env.DATABASE_URL);
   const ai = createAiClient({ mock: useMock || true }); // default to mock for onboarding CLI
   const contentEngine = createStubContentEngine();
 
@@ -104,7 +104,7 @@ Options:
       process.exit(1);
   }
 
-  humDb.close();
+  await humDb.close();
 }
 
 main().catch((err) => {

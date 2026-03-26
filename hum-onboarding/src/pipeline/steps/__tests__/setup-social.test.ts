@@ -5,12 +5,12 @@ import * as sessionRepo from '../../../session/repository.js';
 
 let humDb: HumDb;
 
-beforeEach(() => {
-  humDb = createDb(':memory:');
+beforeEach(async () => {
+  humDb = await createDb();
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 describe('setupSocialStep', () => {

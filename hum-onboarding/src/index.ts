@@ -1,6 +1,4 @@
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import type * as schema from 'hum-core/dist/db/schema.js';
-import { clientRepo, DuplicateError, NotFoundError } from 'hum-core';
+import { clientRepo, DuplicateError, NotFoundError, type HumDb } from 'hum-core';
 import { runPipeline } from './pipeline/orchestrator.js';
 import * as sessionRepo from './session/repository.js';
 import { intakeDataSchema } from './session/types.js';
@@ -12,7 +10,7 @@ import { triggerContentStep } from './pipeline/steps/trigger-content.js';
 import type { IntegrationClients } from './pipeline/types.js';
 import type { IntakeData, OnboardingSession } from './session/types.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 const ALL_STEPS = [
   createClientStep,

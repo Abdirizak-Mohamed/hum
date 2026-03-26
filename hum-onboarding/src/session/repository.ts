@@ -1,12 +1,10 @@
 import { eq } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import { onboardingSessions, NotFoundError } from 'hum-core';
-import type * as schema from 'hum-core/dist/db/schema.js';
+import { onboardingSessions, NotFoundError, type HumDb } from 'hum-core';
 import { OnboardingSession } from './types.js';
 import type { StepName, StepResult, IntakeData } from './types.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 export async function create(
   db: Db,
@@ -15,7 +13,7 @@ export async function create(
     intakeData: IntakeData;
   },
 ): Promise<OnboardingSession> {
-  const now = new Date();
+  const now = Date.now();
   const id = uuidv7();
 
   await db.insert(onboardingSessions)
@@ -27,20 +25,20 @@ export async function create(
       startedAt: now,
       updatedAt: now,
     })
-    .run();
+    .execute();
 
-  const row = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, id)).get();
-  return new OnboardingSession(row!);
+  const rows = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, id));
+  return new OnboardingSession(rows[0]!);
 }
 
 export async function getById(db: Db, id: string): Promise<OnboardingSession | undefined> {
-  const row = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, id)).get();
-  return row ? new OnboardingSession(row) : undefined;
+  const rows = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, id));
+  return rows[0] ? new OnboardingSession(rows[0]) : undefined;
 }
 
 export async function getByClientId(db: Db, clientId: string): Promise<OnboardingSession | undefined> {
-  const row = await db.select().from(onboardingSessions).where(eq(onboardingSessions.clientId, clientId)).get();
-  return row ? new OnboardingSession(row) : undefined;
+  const rows = await db.select().from(onboardingSessions).where(eq(onboardingSessions.clientId, clientId));
+  return rows[0] ? new OnboardingSession(rows[0]) : undefined;
 }
 
 export async function update(
@@ -50,17 +48,17 @@ export async function update(
     status: 'in_progress' | 'complete' | 'failed';
     currentStep: string | null;
     blockedReason: string | null;
-    completedAt: Date;
+    completedAt: number;
   }>,
 ): Promise<OnboardingSession> {
   await db.update(onboardingSessions)
-    .set({ ...data, updatedAt: new Date() } as any)
+    .set({ ...data, updatedAt: Date.now() } as any)
     .where(eq(onboardingSessions.id, id))
-    .run();
+    .execute();
 
-  const row = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, id)).get();
-  if (!row) throw new NotFoundError('OnboardingSession', id);
-  return new OnboardingSession(row);
+  const rows = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, id));
+  if (!rows[0]) throw new NotFoundError('OnboardingSession', id);
+  return new OnboardingSession(rows[0]);
 }
 
 export async function updateSessionAndStepStatus(
@@ -69,23 +67,23 @@ export async function updateSessionAndStepStatus(
   stepName: StepName,
   stepStatus: 'processing' | 'pending',
 ): Promise<OnboardingSession> {
-  const row = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId)).get();
-  if (!row) throw new NotFoundError('OnboardingSession', sessionId);
+  const rows = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId));
+  if (!rows[0]) throw new NotFoundError('OnboardingSession', sessionId);
 
-  const stepResults = (row.stepResults ?? {}) as Record<string, StepResult>;
+  const stepResults = (rows[0].stepResults ?? {}) as Record<string, StepResult>;
   stepResults[stepName] = { ...stepResults[stepName], status: stepStatus };
 
   await db.update(onboardingSessions)
     .set({
       currentStep: stepName,
       stepResults: stepResults as Record<string, unknown>,
-      updatedAt: new Date(),
+      updatedAt: Date.now(),
     } as any)
     .where(eq(onboardingSessions.id, sessionId))
-    .run();
+    .execute();
 
-  const updated = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId)).get();
-  return new OnboardingSession(updated!);
+  const updated = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId));
+  return new OnboardingSession(updated[0]!);
 }
 
 export async function saveStepResult(
@@ -94,20 +92,20 @@ export async function saveStepResult(
   stepName: StepName,
   result: StepResult,
 ): Promise<OnboardingSession> {
-  const row = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId)).get();
-  if (!row) throw new NotFoundError('OnboardingSession', sessionId);
+  const rows = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId));
+  if (!rows[0]) throw new NotFoundError('OnboardingSession', sessionId);
 
-  const stepResults = (row.stepResults ?? {}) as Record<string, StepResult>;
+  const stepResults = (rows[0].stepResults ?? {}) as Record<string, StepResult>;
   stepResults[stepName] = result;
 
   await db.update(onboardingSessions)
     .set({
       stepResults: stepResults as Record<string, unknown>,
-      updatedAt: new Date(),
+      updatedAt: Date.now(),
     } as any)
     .where(eq(onboardingSessions.id, sessionId))
-    .run();
+    .execute();
 
-  const updated = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId)).get();
-  return new OnboardingSession(updated!);
+  const updated = await db.select().from(onboardingSessions).where(eq(onboardingSessions.id, sessionId));
+  return new OnboardingSession(updated[0]!);
 }
