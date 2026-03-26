@@ -13,7 +13,7 @@ const makeProfile = (overrides = {}) =>
     menuItems: [{ name: 'Lamb Doner', description: 'Slow-roasted lamb', category: 'Mains', price: 8.99 }],
     brandColours: ['#FF5733', '#33FF57'],
     logoUrl: 'https://example.com/logo.png',
-    generatedAt: new Date(), updatedAt: new Date(),
+    generatedAt: Date.now(), updatedAt: Date.now(),
     ...overrides,
   });
 

@@ -9,7 +9,7 @@ const makeItem = (overrides = {}) =>
     cta: 'Order now on Deliveroo', mediaUrls: ['https://example.com/photo.jpg'],
     platforms: ['instagram', 'facebook'],
     scheduledAt: null, postedAt: null, performance: null,
-    createdAt: new Date(), updatedAt: new Date(),
+    createdAt: Date.now(), updatedAt: Date.now(),
     ...overrides,
   });
 
@@ -22,14 +22,14 @@ describe('ContentItem', () => {
   });
   describe('isOverdue', () => {
     it('true when scheduled in the past and not posted', () => {
-      expect(makeItem({ status: 'scheduled', scheduledAt: new Date(Date.now() - 60000) }).isOverdue()).toBe(true);
+      expect(makeItem({ status: 'scheduled', scheduledAt: Date.now() - 60000 }).isOverdue()).toBe(true);
     });
     it('false when scheduled in the future', () => {
-      expect(makeItem({ status: 'scheduled', scheduledAt: new Date(Date.now() + 60000) }).isOverdue()).toBe(false);
+      expect(makeItem({ status: 'scheduled', scheduledAt: Date.now() + 60000 }).isOverdue()).toBe(false);
     });
     it('false when not scheduled', () => { expect(makeItem({ scheduledAt: null }).isOverdue()).toBe(false); });
     it('false when already posted', () => {
-      expect(makeItem({ status: 'posted', scheduledAt: new Date(Date.now() - 60000) }).isOverdue()).toBe(false);
+      expect(makeItem({ status: 'posted', scheduledAt: Date.now() - 60000 }).isOverdue()).toBe(false);
     });
   });
   describe('hasMedia', () => {

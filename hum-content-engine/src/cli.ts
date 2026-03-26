@@ -35,7 +35,7 @@ Options:
     process.exit(0);
   }
 
-  const humDb = createDb(process.env.DATABASE_URL);
+  const humDb = await createDb(process.env.DATABASE_URL);
   const ai = createAiClient({ mock: useMock });
   const social = createSocialClient({ mock: useMock });
   const storage = new LocalStorageClient(defaultConfig.storage.basePath);
@@ -83,7 +83,7 @@ Options:
         process.exit(1);
       }
 
-      humDb.close();
+      await humDb.close();
       break;
     }
 

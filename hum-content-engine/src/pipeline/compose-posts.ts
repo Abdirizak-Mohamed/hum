@@ -81,7 +81,7 @@ export async function composePosts(
         cta: postCopy.cta,
         mediaUrls: [postMedia.localPath],
         platforms: [platform],
-        scheduledAt: new Date(scheduledAt),
+        scheduledAt: new Date(scheduledAt).getTime(),
       });
 
       results.push({
