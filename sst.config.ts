@@ -25,7 +25,7 @@ export default $config({
     // RDS Postgres
     const rds = new sst.aws.Postgres("Db", {
       vpc,
-      instance: "db.t4g.micro",
+      instance: "t4g.micro",
     });
 
     // S3 media storage
