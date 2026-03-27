@@ -156,6 +156,12 @@ importers:
       hum-core:
         specifier: workspace:*
         version: link:../hum-core
+      hum-integrations:
+        specifier: workspace:*
+        version: link:../hum-integrations
+      hum-onboarding:
+        specifier: workspace:*
+        version: link:../hum-onboarding
       lucide-react:
         specifier: ^0.460.0
         version: 0.460.0(react@19.2.4)
