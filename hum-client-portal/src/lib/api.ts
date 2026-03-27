@@ -27,4 +27,19 @@ export const api = {
       }>(`/api/content${qs ? `?${qs}` : ''}`);
     },
   },
+  uploads: {
+    list: (params?: { category?: string; page?: number; limit?: number }) => {
+      const sp = new URLSearchParams();
+      if (params?.category) sp.set('category', params.category);
+      if (params?.page) sp.set('page', String(params.page));
+      if (params?.limit) sp.set('limit', String(params.limit));
+      const qs = sp.toString();
+      return fetchJson<{
+        items: Record<string, unknown>[];
+        total: number;
+        page: number;
+        limit: number;
+      }>(`/api/upload${qs ? `?${qs}` : ''}`);
+    },
+  },
 };
