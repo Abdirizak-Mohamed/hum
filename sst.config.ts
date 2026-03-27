@@ -37,6 +37,7 @@ export default $config({
     const ayrshareKey = new sst.Secret("AyrshareApiKey");
     const stripeKey = new sst.Secret("StripeSecretKey");
     const stripeWebhook = new sst.Secret("StripeWebhookSecret");
+    const dashboardPassword = new sst.Secret("DashboardPassword");
 
     const allLinks = [rds, media, openaiKey, falKey, ayrshareKey, stripeKey, stripeWebhook];
 
@@ -44,11 +45,12 @@ export default $config({
     const dashboard = new sst.aws.Nextjs("Dashboard", {
       path: "hum-dashboard",
       vpc,
-      link: allLinks,
+      link: [...allLinks, dashboardPassword],
       environment: {
         ...sharedEnv,
         MEDIA_BUCKET: media.name,
         DATABASE_URL: $interpolate`postgres://${rds.username}:${rds.password}@${rds.host}:${rds.port}/${rds.database}`,
+        DASHBOARD_PASSWORD: dashboardPassword.value,
       },
     });
 
