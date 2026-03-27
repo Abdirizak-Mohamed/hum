@@ -42,4 +42,13 @@ export const api = {
       }>(`/api/upload${qs ? `?${qs}` : ''}`);
     },
   },
+  account: {
+    get: () => {
+      return fetchJson<{
+        client: Record<string, unknown>;
+        brandProfile: Record<string, unknown> | null;
+        socialAccounts: Record<string, unknown>[];
+      }>('/api/account');
+    },
+  },
 };
