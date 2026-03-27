@@ -12,6 +12,13 @@ export default $config({
     };
   },
   async run() {
+    const isProd = $app.stage === "prod";
+
+    // Shared env vars for all Lambda functions
+    const sharedEnv = {
+      HUM_MOCK_INTEGRATIONS: isProd ? "false" : "true",
+    };
+
     // VPC with cheap EC2 NAT instance
     const vpc = new sst.aws.Vpc("Vpc", { nat: "ec2" });
 
@@ -39,6 +46,7 @@ export default $config({
       vpc,
       link: allLinks,
       environment: {
+        ...sharedEnv,
         MEDIA_BUCKET: media.name,
         DATABASE_URL: $interpolate`postgres://${rds.username}:${rds.password}@${rds.host}:${rds.port}/${rds.database}`,
       },
@@ -68,6 +76,7 @@ export default $config({
       vpc,
       link: allLinks,
       environment: {
+        ...sharedEnv,
         MEDIA_BUCKET: media.name,
         DATABASE_URL: $interpolate`postgres://${rds.username}:${rds.password}@${rds.host}:${rds.port}/${rds.database}`,
       },
