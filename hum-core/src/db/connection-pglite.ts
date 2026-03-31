@@ -83,6 +83,51 @@ export async function createPgliteDb(dataDir?: string): Promise<HumDb> {
       completed_at BIGINT,
       updated_at BIGINT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS portal_users (
+      id TEXT PRIMARY KEY,
+      client_id TEXT REFERENCES clients(id),
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending_intake',
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL,
+      last_login_at BIGINT
+    );
+
+    CREATE TABLE IF NOT EXISTS client_uploads (
+      id TEXT PRIMARY KEY,
+      portal_user_id TEXT NOT NULL REFERENCES portal_users(id),
+      filename TEXT NOT NULL,
+      storage_path TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size_bytes BIGINT NOT NULL,
+      category TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS intake_submissions (
+      id TEXT PRIMARY KEY,
+      portal_user_id TEXT NOT NULL UNIQUE REFERENCES portal_users(id),
+      business_name TEXT NOT NULL,
+      address TEXT,
+      phone TEXT,
+      opening_hours JSONB,
+      menu_data TEXT,
+      menu_upload_ids JSONB DEFAULT '[]',
+      food_photo_upload_ids JSONB DEFAULT '[]',
+      social_links JSONB,
+      brand_preferences TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      submitted_at BIGINT,
+      reviewed_at BIGINT,
+      review_notes TEXT,
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL
+    );
   `);
 
   return {

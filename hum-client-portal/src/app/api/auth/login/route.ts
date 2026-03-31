@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { portalUserRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { setAuthCookie } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
   }
 
+  const db = await getDb();
   const user = await portalUserRepo.getByEmail(db, email);
   if (!user) {
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
   }
 
-  await portalUserRepo.update(db, user.id, { lastLoginAt: new Date() });
+  await portalUserRepo.update(db, user.id, { lastLoginAt: Date.now() });
 
   const response = NextResponse.json({ ok: true });
   return setAuthCookie(response, user.id);

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPortalUser } from '@/lib/auth';
 import { clientRepo, brandProfileRepo, socialAccountRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 export async function GET() {
   const user = await getPortalUser();
@@ -10,6 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = await getDb();
   const client = await clientRepo.getById(db, user.clientId);
   const brandProfile = await brandProfileRepo.getByClientId(db, user.clientId);
   const socialAccounts = await socialAccountRepo.listByClientId(db, user.clientId);

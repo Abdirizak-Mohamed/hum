@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPortalUser } from '@/lib/auth';
 import { clientUploadRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = await getDb();
   const formData = await request.formData();
   const file = formData.get('file') as File | null;
   const category = formData.get('category') as string | null;
@@ -88,6 +89,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = await getDb();
   const { searchParams } = request.nextUrl;
   const category = searchParams.get('category') ?? undefined;
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'));

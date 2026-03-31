@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { intakeSubmissionRepo, portalUserRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 export async function GET(request: Request) {
+  const db = await getDb();
   const { searchParams } = new URL(request.url);
   const status = (searchParams.get('status') ?? 'submitted') as
     | 'draft'

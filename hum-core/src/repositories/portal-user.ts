@@ -1,12 +1,11 @@
 import { eq, and, type SQL } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { portalUsers } from '../db/schema.js';
 import { PortalUser } from '../models/portal-user.js';
 import { NotFoundError } from '../utils/errors.js';
-import type * as schema from '../db/schema.js';
+import type { HumDb } from '../db/connection.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 export async function create(
   db: Db,
@@ -18,7 +17,7 @@ export async function create(
     status?: 'pending_intake' | 'pending_approval' | 'active' | 'suspended';
   },
 ): Promise<PortalUser> {
-  const now = new Date();
+  const now = Date.now();
   const id = uuidv7();
 
   await db.insert(portalUsers)
@@ -33,19 +32,19 @@ export async function create(
       updatedAt: now,
       lastLoginAt: null,
     })
-    .run();
+    .execute();
 
-  const row = await db.select().from(portalUsers).where(eq(portalUsers.id, id)).get();
+  const row = (await db.select().from(portalUsers).where(eq(portalUsers.id, id)))[0];
   return new PortalUser(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<PortalUser | undefined> {
-  const row = await db.select().from(portalUsers).where(eq(portalUsers.id, id)).get();
+  const row = (await db.select().from(portalUsers).where(eq(portalUsers.id, id)))[0];
   return row ? new PortalUser(row) : undefined;
 }
 
 export async function getByEmail(db: Db, email: string): Promise<PortalUser | undefined> {
-  const row = await db.select().from(portalUsers).where(eq(portalUsers.email, email)).get();
+  const row = (await db.select().from(portalUsers).where(eq(portalUsers.email, email)))[0];
   return row ? new PortalUser(row) : undefined;
 }
 
@@ -58,15 +57,15 @@ export async function update(
     name: string;
     clientId: string;
     status: 'pending_intake' | 'pending_approval' | 'active' | 'suspended';
-    lastLoginAt: Date;
+    lastLoginAt: number;
   }>,
 ): Promise<PortalUser> {
   await db.update(portalUsers)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: Date.now() })
     .where(eq(portalUsers.id, id))
-    .run();
+    .execute();
 
-  const row = await db.select().from(portalUsers).where(eq(portalUsers.id, id)).get();
+  const row = (await db.select().from(portalUsers).where(eq(portalUsers.id, id)))[0];
   if (!row) throw new NotFoundError('PortalUser', id);
   return new PortalUser(row);
 }
@@ -79,12 +78,12 @@ export async function list(
   if (filters?.status) conditions.push(eq(portalUsers.status, filters.status as any));
 
   const rows = conditions.length
-    ? await db.select().from(portalUsers).where(and(...conditions)).all()
-    : await db.select().from(portalUsers).all();
+    ? await db.select().from(portalUsers).where(and(...conditions))
+    : await db.select().from(portalUsers);
 
   return rows.map((row) => new PortalUser(row));
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  await db.delete(portalUsers).where(eq(portalUsers.id, id)).run();
+  await db.delete(portalUsers).where(eq(portalUsers.id, id)).execute();
 }

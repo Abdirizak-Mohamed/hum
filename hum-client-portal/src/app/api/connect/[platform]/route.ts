@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { socialAccountRepo, clientRepo } from 'hum-core';
 import { createSocialConnectClient } from 'hum-integrations';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { getPortalUser } from '@/lib/auth';
 
 export async function POST(
@@ -11,6 +11,7 @@ export async function POST(
   const user = await getPortalUser();
   if (!user?.clientId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const db = await getDb();
   const { platform } = await params;
   const validPlatforms = ['instagram', 'facebook', 'tiktok', 'google_business'];
   if (!validPlatforms.includes(platform)) {

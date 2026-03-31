@@ -1,12 +1,11 @@
 import { eq, and, type SQL } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { clientUploads } from '../db/schema.js';
 import { ClientUpload } from '../models/client-upload.js';
 import { NotFoundError } from '../utils/errors.js';
-import type * as schema from '../db/schema.js';
+import type { HumDb } from '../db/connection.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 export async function create(
   db: Db,
@@ -19,7 +18,7 @@ export async function create(
     category: 'food_photo' | 'menu' | 'logo' | 'interior' | 'other';
   },
 ): Promise<ClientUpload> {
-  const now = new Date();
+  const now = Date.now();
   const id = uuidv7();
 
   await db.insert(clientUploads)
@@ -35,14 +34,14 @@ export async function create(
       createdAt: now,
       updatedAt: now,
     })
-    .run();
+    .execute();
 
-  const row = await db.select().from(clientUploads).where(eq(clientUploads.id, id)).get();
+  const row = (await db.select().from(clientUploads).where(eq(clientUploads.id, id)))[0];
   return new ClientUpload(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<ClientUpload | undefined> {
-  const row = await db.select().from(clientUploads).where(eq(clientUploads.id, id)).get();
+  const row = (await db.select().from(clientUploads).where(eq(clientUploads.id, id)))[0];
   return row ? new ClientUpload(row) : undefined;
 }
 
@@ -54,7 +53,7 @@ export async function listByPortalUserId(
   const conditions: SQL[] = [eq(clientUploads.portalUserId, portalUserId)];
   if (filters?.category) conditions.push(eq(clientUploads.category, filters.category as any));
 
-  const rows = await db.select().from(clientUploads).where(and(...conditions)).all();
+  const rows = await db.select().from(clientUploads).where(and(...conditions));
   return rows.map((row) => new ClientUpload(row));
 }
 
@@ -64,15 +63,15 @@ export async function update(
   data: { status?: 'pending' | 'used' | 'archived' },
 ): Promise<ClientUpload> {
   await db.update(clientUploads)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: Date.now() })
     .where(eq(clientUploads.id, id))
-    .run();
+    .execute();
 
-  const row = await db.select().from(clientUploads).where(eq(clientUploads.id, id)).get();
+  const row = (await db.select().from(clientUploads).where(eq(clientUploads.id, id)))[0];
   if (!row) throw new NotFoundError('ClientUpload', id);
   return new ClientUpload(row);
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  await db.delete(clientUploads).where(eq(clientUploads.id, id)).run();
+  await db.delete(clientUploads).where(eq(clientUploads.id, id)).execute();
 }

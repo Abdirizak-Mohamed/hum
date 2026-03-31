@@ -23,9 +23,9 @@ export class PortalUser {
     this.passwordHash = row.passwordHash;
     this.name = row.name;
     this.status = row.status;
-    this.createdAt = row.createdAt;
-    this.updatedAt = row.updatedAt;
-    this.lastLoginAt = row.lastLoginAt;
+    this.createdAt = new Date(row.createdAt);
+    this.updatedAt = new Date(row.updatedAt);
+    this.lastLoginAt = row.lastLoginAt ? new Date(row.lastLoginAt) : null;
   }
 
   isActive(): boolean { return this.status === 'active'; }

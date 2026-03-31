@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { socialAccountRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { getPortalUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   const user = await getPortalUser();
   if (!user?.clientId) return NextResponse.redirect(new URL('/login', request.url));
 
+  const db = await getDb();
   const { searchParams } = new URL(request.url);
   const profileKey = searchParams.get('profileKey');
   const platform = searchParams.get('platform');
