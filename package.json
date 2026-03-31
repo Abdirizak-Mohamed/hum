@@ -2,7 +2,20 @@
   "name": "hum",
   "private": true,
   "scripts": {
+    "dev": "pnpm --filter hum-core build && pnpm --filter hum-integrations build && concurrently -n core,intg,dash,portal -c blue,cyan,green,magenta \"pnpm --filter hum-core build:watch\" \"pnpm --filter hum-integrations build:watch\" \"pnpm --filter hum-dashboard dev\" \"pnpm --filter hum-client-portal dev\"",
     "build": "pnpm -r build",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "generate": "node --import tsx hum-content-engine/src/cli.ts generate",
+    "seed": "node --import tsx scripts/seed.ts",
+    "onboard": "node --import tsx hum-onboarding/src/cli.ts"
+  },
+  "dependencies": {
+    "hum-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^2.4.3",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.21.0"
   }
 }

@@ -12,12 +12,13 @@ export class OpenAiProvider {
   async generateCopy(prompt: CopyPrompt): Promise<CopyResult> {
     try {
       const response = await this.client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: prompt.model ?? 'gpt-4o-mini',
         messages: [
           { role: 'system', content: prompt.systemPrompt },
           { role: 'user', content: prompt.userPrompt },
         ],
         max_tokens: prompt.maxTokens,
+        response_format: { type: 'json_object' },
       });
 
       const text = response.choices[0]?.message?.content ?? '';
@@ -34,13 +35,14 @@ export class OpenAiProvider {
   }
 
   async generateBrandProfile(input: BrandInput): Promise<BrandProfileResult> {
-    const systemPrompt = `You are a brand strategist specialising in restaurant and takeaway marketing. Generate a brand profile as JSON with these exact fields: brandVoiceGuide (string), keySellingPoints (string[]), targetAudienceProfile (string), contentThemes (string[]), hashtagStrategy (string[]). Return only valid JSON, no markdown.`;
+    const systemPrompt = `You are a brand strategist specialising in restaurant and takeaway marketing. Generate a brand profile as JSON with these exact fields: brandVoiceGuide (string), keySellingPoints (string[]), targetAudienceProfile (string), contentThemes (string[]), hashtagStrategy (string[]), peakPostingTimes (object mapping platform names like "instagram", "facebook", "tiktok", "google_business" to arrays of time strings like ["12:00", "18:00", "21:00"]). Return only valid JSON, no markdown.`;
 
     const userPrompt = [
       `Business: ${input.businessName}`,
       `Menu: ${input.menuDescription}`,
       input.cuisineType ? `Cuisine: ${input.cuisineType}` : '',
       input.location ? `Location: ${input.location}` : '',
+      input.brandPreferences ? `Brand preferences: ${input.brandPreferences}` : '',
     ].filter(Boolean).join('\n');
 
     try {

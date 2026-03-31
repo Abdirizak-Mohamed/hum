@@ -4,3 +4,7 @@ dist/
 *.sqlite
 .env
 .DS_Store
+.next
+.superpowers
+media/
+.worktrees/

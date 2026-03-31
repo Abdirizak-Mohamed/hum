@@ -7,8 +7,8 @@ export { createAiClient } from './ai/index.js';
 export type { AiClient, CopyPrompt, CopyResult, BrandInput, BrandProfileResult, ImagePrompt, ImageResult } from './ai/index.js';
 
 // Social
-export { createSocialClient } from './social/index.js';
-export type { SocialClient, SchedulePostInput, ScheduledPost, SocialProfile } from './social/index.js';
+export { createSocialClient, createSocialConnectClient } from './social/index.js';
+export type { SocialClient, SocialConnectClient, SchedulePostInput, ScheduledPost, SocialProfile } from './social/index.js';
 
 // Payments
 export { createPaymentsClient } from './payments/index.js';

@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { clients, brandProfiles, socialAccounts, contentItems } from '../db/schema.js';
+import { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions, portalUsers, clientUploads, intakeSubmissions } from '../db/schema.js';
 
 // Update schemas use createSelectSchema (not createInsertSchema) to avoid
 // insert defaults (e.g., planTier defaulting to 'starter') leaking into
@@ -63,6 +63,76 @@ export const createContentItemSchema = createInsertSchema(contentItems).omit({
 export const updateContentItemSchema = createSelectSchema(contentItems).omit({
   id: true,
   clientId: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
+
+// ── OnboardingSession schemas ──────────────────────────
+
+export const onboardingSessionSchema = createSelectSchema(onboardingSessions);
+export const createOnboardingSessionSchema = createInsertSchema(onboardingSessions).omit({
+  id: true,
+  completedAt: true,
+  updatedAt: true,
+});
+export const updateOnboardingSessionSchema = createSelectSchema(onboardingSessions).omit({
+  id: true,
+  clientId: true,
+  startedAt: true,
+  updatedAt: true,
+}).partial();
+
+// ── PortalUser schemas ─────────────────────────────────
+
+export const portalUserSchema = createSelectSchema(portalUsers);
+export const createPortalUserSchema = createInsertSchema(portalUsers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+});
+export const updatePortalUserSchema = createSelectSchema(portalUsers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
+
+// ── ClientUpload schemas ─────────────────────────────
+
+export const clientUploadSchema = createSelectSchema(clientUploads);
+export const createClientUploadSchema = createInsertSchema(clientUploads).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const updateClientUploadSchema = createSelectSchema(clientUploads).omit({
+  id: true,
+  portalUserId: true,
+  filename: true,
+  storagePath: true,
+  mimeType: true,
+  sizeBytes: true,
+  category: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
+
+// ── IntakeSubmission schemas ─────────────────────────
+
+export const intakeSubmissionSchema = createSelectSchema(intakeSubmissions);
+export const createIntakeSubmissionSchema = createInsertSchema(intakeSubmissions).omit({
+  id: true,
+  status: true,
+  submittedAt: true,
+  reviewedAt: true,
+  reviewNotes: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const updateIntakeSubmissionSchema = createSelectSchema(intakeSubmissions).omit({
+  id: true,
+  portalUserId: true,
   createdAt: true,
   updatedAt: true,
 }).partial();

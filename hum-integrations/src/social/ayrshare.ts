@@ -1,4 +1,5 @@
 import type { SocialClient, SchedulePostInput, ScheduledPost, SocialProfile } from './types.js';
+import type { SocialConnectClient } from './connect-types.js';
 import { IntegrationError, IntegrationErrorCode } from '../common/errors.js';
 import { withRetry } from '../common/retry.js';
 import type { Platform } from 'hum-core';
@@ -10,7 +11,7 @@ type AyrshareConfig = {
   retryBaseDelayMs?: number;
 };
 
-export class AyrshareProvider implements SocialClient {
+export class AyrshareProvider implements SocialClient, SocialConnectClient {
   private apiKey: string;
   private retryBaseDelayMs: number;
 
@@ -58,6 +59,21 @@ export class AyrshareProvider implements SocialClient {
 
   async deletePost(postId: string): Promise<void> {
     await this.request('DELETE', `/post/${postId}`);
+  }
+
+  async createProfile(input: { title: string }): Promise<{ profileKey: string }> {
+    const data = await this.request<{ profileKey: string }>('POST', '/profiles', {
+      title: input.title,
+    });
+    return { profileKey: data.profileKey };
+  }
+
+  async getConnectUrl(profileKey: string, platform: Platform, callbackUrl: string): Promise<{ url: string }> {
+    const data = await this.request<{ url: string }>(
+      'POST', `/profiles/${profileKey}/connect`,
+      { platform, callbackUrl },
+    );
+    return { url: data.url };
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

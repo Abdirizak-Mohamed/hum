@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && rm -rf dist/db/migrations && cp -r src/db/migrations dist/db/migrations",
+    "build:watch": "tsc --watch --preserveWatchOutput",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
