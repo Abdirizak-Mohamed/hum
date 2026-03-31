@@ -84,6 +84,17 @@ export default $config({
       },
     });
 
+    // Database migrations — invoke manually after deploy: npx sst invoke --stage dev Migrate
+    new sst.aws.Function("Migrate", {
+      handler: "hum-core/src/db/migrate-handler.run",
+      timeout: "60 seconds",
+      vpc,
+      link: [rds],
+      environment: {
+        DATABASE_URL: $interpolate`postgres://${rds.username}:${rds.password}@${rds.host}:${rds.port}/${rds.database}`,
+      },
+    });
+
     return {
       dashboardUrl: dashboard.url,
       onboardingFn: onboarding.name,
