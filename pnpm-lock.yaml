@@ -12,6 +12,12 @@ importers:
         specifier: workspace:*
         version: link:hum-core
     devDependencies:
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1

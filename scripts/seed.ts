@@ -9,7 +9,10 @@ import {
   brandProfileRepo,
   socialAccountRepo,
   contentItemRepo,
+  portalUserRepo,
+  intakeSubmissionRepo,
 } from 'hum-core';
+import bcrypt from 'bcryptjs';
 
 async function seed() {
   const { db } = createDb();
@@ -342,6 +345,73 @@ async function seed() {
   });
 
   // ─────────────────────────────────────────────
+  // 5. Portal Users
+  // ─────────────────────────────────────────────
+
+  const hash = await bcrypt.hash('password', 10);
+
+  // Active users — linked to existing clients
+  await portalUserRepo.create(db, {
+    email: 'ali@aliskebabs.co.uk',
+    passwordHash: hash,
+    name: 'Ali Khan',
+    clientId: alisKebabs.id,
+    status: 'active',
+  });
+
+  await portalUserRepo.create(db, {
+    email: 'info@dragonpalace.co.uk',
+    passwordHash: hash,
+    name: 'Wei Chen',
+    clientId: dragonPalace.id,
+    status: 'active',
+  });
+
+  await portalUserRepo.create(db, {
+    email: 'tony@tonyspizza.co.uk',
+    passwordHash: hash,
+    name: 'Tony Rossi',
+    clientId: tonysPizza.id,
+    status: 'active',
+  });
+
+  // Pending approval — submitted intake, waiting for operator review
+  const pendingUser = await portalUserRepo.create(db, {
+    email: 'hello@spicehouse.co.uk',
+    passwordHash: hash,
+    name: 'Raj Patel',
+    status: 'pending_approval',
+  });
+
+  await intakeSubmissionRepo.create(db, {
+    portalUserId: pendingUser.id,
+    businessName: 'Spice House',
+    address: '5 Broad Street, Birmingham, B1 2HE',
+    phone: '0121 555 004',
+    menuData: 'Chicken Tikka Masala £9.99, Lamb Biryani £10.99, Garlic Naan £2.50, Onion Bhaji £3.99',
+    socialLinks: { instagram: 'https://instagram.com/spicehousebham', facebook: 'https://facebook.com/spicehouse' },
+    brandPreferences: 'Warm colours, authentic Indian feel, family-friendly',
+  });
+  // Mark as submitted
+  const pendingSub = await intakeSubmissionRepo.getByPortalUserId(db, pendingUser.id);
+  if (pendingSub) {
+    await intakeSubmissionRepo.update(db, pendingSub.id, {
+      status: 'submitted',
+      submittedAt: new Date(),
+    });
+  }
+
+  // Pending intake — just signed up, hasn't filled in the form yet
+  await portalUserRepo.create(db, {
+    email: 'noodlebar88@gmail.com',
+    passwordHash: hash,
+    name: 'Mei Lin',
+    status: 'pending_intake',
+  });
+
+  console.log('Portal users created: 5 (all password: "password")');
+
+  // ─────────────────────────────────────────────
   // Summary
   // ─────────────────────────────────────────────
   const allClients = await clientRepo.list(db);
@@ -352,6 +422,8 @@ async function seed() {
   const failed = allContent.filter((c) => c.status === 'failed');
 
   console.log('\n✅  Seed complete!\n');
+  const allPortalUsers = await portalUserRepo.list(db);
+
   console.log(`  Clients         : ${allClients.length}`);
   console.log(`  Brand profiles  : 3`);
   console.log(`  Social accounts : 8`);
@@ -359,6 +431,8 @@ async function seed() {
   console.log(`    - scheduled   : ${scheduled.length}`);
   console.log(`    - posted      : ${posted.length}`);
   console.log(`    - failed      : ${failed.length}`);
+  console.log(`  Portal users    : ${allPortalUsers.length}`);
+  console.log(`    - all use password: "password"`);
   console.log('');
 }
 
