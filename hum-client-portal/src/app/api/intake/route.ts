@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPortalUser } from '@/lib/auth';
 import { intakeSubmissionRepo, clientUploadRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 export async function GET() {
   const user = await getPortalUser();
@@ -9,6 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = await getDb();
   const submission = await intakeSubmissionRepo.getByPortalUserId(db, user.id);
 
   if (!submission) {
@@ -41,6 +42,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = await getDb();
   const body = await request.json();
 
   const fields = {

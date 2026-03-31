@@ -51,9 +51,9 @@ export class OnboardingSession {
   readonly stepResults: Record<string, StepResult>;
   readonly intakeData: IntakeData | null;
   readonly blockedReason: string | null;
-  readonly startedAt: Date;
-  readonly completedAt: Date | null;
-  readonly updatedAt: Date;
+  readonly startedAt: number;
+  readonly completedAt: number | null;
+  readonly updatedAt: number;
 
   constructor(row: OnboardingSessionRow) {
     this.id = row.id;
@@ -64,7 +64,7 @@ export class OnboardingSession {
     this.intakeData = row.intakeData as IntakeData | null;
     this.blockedReason = row.blockedReason;
     this.startedAt = row.startedAt;
-    this.completedAt = row.completedAt;
+    this.completedAt = row.completedAt ?? null;
     this.updatedAt = row.updatedAt;
   }
 
@@ -77,16 +77,11 @@ export class OnboardingSession {
   }
 
   getFailedStep(): StepName | undefined {
-    for (const [name, result] of Object.entries(this.stepResults)) {
-      if (result.status === 'failed') return name as StepName;
-    }
-    return undefined;
+    return STEP_NAMES.find((name) => this.stepResults[name]?.status === 'failed');
   }
 
   getCompletedSteps(): StepName[] {
-    return Object.entries(this.stepResults)
-      .filter(([, result]) => result.status === 'complete')
-      .map(([name]) => name as StepName);
+    return STEP_NAMES.filter((name) => this.stepResults[name]?.status === 'complete');
   }
 
   getNextPendingStep(allSteps: StepName[]): StepName | undefined {

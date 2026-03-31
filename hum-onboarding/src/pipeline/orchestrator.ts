@@ -37,7 +37,7 @@ export async function runPipeline(
 
   await sessionRepo.update(ctx.db, sessionId, {
     status: 'complete',
-    completedAt: new Date(),
+    completedAt: Date.now(),
   });
   const completed = await sessionRepo.getById(ctx.db, sessionId);
   if (!completed) throw new NotFoundError('OnboardingSession', sessionId);

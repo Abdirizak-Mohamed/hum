@@ -8,7 +8,7 @@ let humDb: HumDb;
 let portalUserId: string;
 
 beforeEach(async () => {
-  humDb = createDb(':memory:');
+  humDb = await createDb();
   // Create a portal user for FK reference
   const user = await portalUserRepo.create(humDb.db, {
     email: 'ali@kebabs.com',
@@ -18,8 +18,8 @@ beforeEach(async () => {
   portalUserId = user.id;
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 describe('clientUploadRepo', () => {

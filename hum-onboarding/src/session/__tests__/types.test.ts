@@ -60,9 +60,9 @@ describe('OnboardingSession', () => {
     stepResults: {},
     intakeData: null,
     blockedReason: null,
-    startedAt: new Date('2026-01-01'),
+    startedAt: Date.parse('2026-01-01'),
     completedAt: null,
-    updatedAt: new Date('2026-01-01'),
+    updatedAt: Date.parse('2026-01-01'),
   };
 
   it('wraps a row with readonly properties', () => {

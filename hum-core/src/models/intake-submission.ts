@@ -37,11 +37,11 @@ export class IntakeSubmission {
     this.socialLinks = row.socialLinks;
     this.brandPreferences = row.brandPreferences;
     this.status = row.status;
-    this.submittedAt = row.submittedAt;
-    this.reviewedAt = row.reviewedAt;
+    this.submittedAt = row.submittedAt ? new Date(row.submittedAt) : null;
+    this.reviewedAt = row.reviewedAt ? new Date(row.reviewedAt) : null;
     this.reviewNotes = row.reviewNotes;
-    this.createdAt = row.createdAt;
-    this.updatedAt = row.updatedAt;
+    this.createdAt = new Date(row.createdAt);
+    this.updatedAt = new Date(row.updatedAt);
   }
 
   isDraft(): boolean { return this.status === 'draft'; }

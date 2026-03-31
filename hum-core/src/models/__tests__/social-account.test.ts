@@ -6,7 +6,7 @@ const makeAccount = (overrides = {}) =>
     id: '01234567-89ab-cdef-0123-456789abcdef', clientId: 'client-uuid',
     platform: 'instagram', platformAccountId: 'ig_12345',
     ayrshareProfileKey: 'profile_abc', status: 'connected',
-    createdAt: new Date(), connectedAt: new Date(), updatedAt: new Date(),
+    createdAt: Date.now(), connectedAt: Date.now(), updatedAt: Date.now(),
     ...overrides,
   });
 

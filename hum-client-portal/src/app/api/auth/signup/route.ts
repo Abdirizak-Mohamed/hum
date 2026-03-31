@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { portalUserRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { setAuthCookie } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email, password, and name are required' }, { status: 400 });
   }
 
+  const db = await getDb();
   const existing = await portalUserRepo.getByEmail(db, email);
   if (existing) {
     return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 });

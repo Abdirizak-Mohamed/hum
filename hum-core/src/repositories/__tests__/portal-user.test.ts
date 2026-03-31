@@ -5,12 +5,12 @@ import { PortalUser } from '../../models/portal-user.js';
 
 let humDb: HumDb;
 
-beforeEach(() => {
-  humDb = createDb(':memory:');
+beforeEach(async () => {
+  humDb = await createDb();
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 describe('portalUserRepo', () => {
@@ -94,7 +94,7 @@ describe('portalUserRepo', () => {
         passwordHash: 'hashed_pw_123',
         name: 'Ali Khan',
       });
-      const loginTime = new Date();
+      const loginTime = Date.now();
       const updated = await portalUserRepo.update(humDb.db, created.id, {
         lastLoginAt: loginTime,
       });

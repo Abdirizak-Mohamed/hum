@@ -28,8 +28,8 @@ export class ClientUpload {
     this.sizeBytes = row.sizeBytes;
     this.category = row.category;
     this.status = row.status;
-    this.createdAt = row.createdAt;
-    this.updatedAt = row.updatedAt;
+    this.createdAt = new Date(row.createdAt);
+    this.updatedAt = new Date(row.updatedAt);
   }
 
   isPending(): boolean { return this.status === 'pending'; }

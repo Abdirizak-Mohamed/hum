@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { intakeSubmissionRepo, portalUserRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const db = await getDb();
   const { id } = await params;
 
   let body: { reviewNotes?: string } = {};
@@ -17,7 +18,7 @@ export async function POST(
   // Reject submission
   await intakeSubmissionRepo.update(db, id, {
     status: 'rejected',
-    reviewedAt: new Date(),
+    reviewedAt: Date.now(),
     reviewNotes: body.reviewNotes ?? undefined,
   });
 

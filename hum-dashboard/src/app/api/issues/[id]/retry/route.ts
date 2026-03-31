@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(_req: NextRequest, { params }: RouteContext) {
   try {
+    const db = await getDb();
     const { id } = await params;
 
     // Strip "content-" prefix to get entityId

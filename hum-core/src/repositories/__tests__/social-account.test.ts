@@ -8,7 +8,7 @@ let humDb: HumDb;
 let clientId: string;
 
 beforeEach(async () => {
-  humDb = createDb(':memory:');
+  humDb = await createDb();
   const client = await clientRepo.create(humDb.db, {
     businessName: "Ali's Kebabs",
     email: 'ali@kebabs.com',
@@ -16,8 +16,8 @@ beforeEach(async () => {
   clientId = client.id;
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 describe('socialAccountRepo', () => {
@@ -65,7 +65,7 @@ describe('socialAccountRepo', () => {
       });
       const updated = await socialAccountRepo.update(humDb.db, account.id, {
         status: 'connected',
-        connectedAt: new Date(),
+        connectedAt: Date.now(),
       });
       expect(updated.status).toBe('connected');
       expect(updated.connectedAt).toBeDefined();

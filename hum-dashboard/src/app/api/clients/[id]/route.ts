@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clientRepo, brandProfileRepo, socialAccountRepo, contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import type { ClientDetail } from '@/types';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
+    const db = await getDb();
     const { id } = await params;
 
     const client = await clientRepo.getById(db, id);
@@ -47,6 +48,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
+    const db = await getDb();
     const { id } = await params;
     const body = await req.json() as { status?: string };
 

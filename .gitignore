@@ -8,3 +8,7 @@ dist/
 .superpowers
 media/
 .worktrees/
+.sst
+sst-env.d.ts
+.open-next
+next-env.d.ts

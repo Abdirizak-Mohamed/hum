@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getPortalUser } from '@/lib/auth';
 import { clientRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { PortalNav } from '@/components/portal-nav';
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +30,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
   let businessName = 'Hum';
   if (user.clientId) {
+    const db = await getDb();
     const client = await clientRepo.getById(db, user.clientId);
     if (client) {
       businessName = client.businessName;

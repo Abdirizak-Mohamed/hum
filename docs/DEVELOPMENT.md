@@ -28,7 +28,7 @@ Shared data models, database access, configuration, and validation schemas used 
 
 | Concern | Implementation |
 |---------|---------------|
-| Database | SQLite via better-sqlite3, Drizzle ORM |
+| Database | Postgres via node-postgres (cloud) / PGlite (local dev), Drizzle ORM |
 | Models | Client, BrandProfile, SocialAccount, ContentItem |
 | Repositories | Typed CRUD + query functions per entity |
 | Validation | Zod schemas derived from Drizzle tables |
@@ -95,7 +95,7 @@ Takes a new signup from payment to fully-configured, content-producing client wi
 4. `setup_social` — Collect social account connections
 5. `trigger_content` — Kick off content engine for first 30-day batch
 
-Uses SQLite-backed session tracking for resumability and per-step state persistence.
+Uses Postgres-backed session tracking for resumability and per-step state persistence.
 
 **Status:** Design and plan complete. Implementation pending.
 **Branch:** `feat/hum-onboarding`
@@ -148,7 +148,9 @@ pnpm test               # test all packages
 ### Environment Variables
 
 ```
-DATABASE_URL             # SQLite path (default: ./hum.db) or Postgres URL
+DATABASE_URL             # Postgres connection string (leave empty for PGlite local dev)
+MEDIA_BUCKET             # S3 bucket name (leave empty for local filesystem fallback)
+MEDIA_STORAGE_PATH       # Local media path (default: ./media, used when MEDIA_BUCKET is unset)
 OPENAI_API_KEY           # OpenAI API key
 FAL_API_KEY              # fal.ai API key (FLUX image generation)
 AYRSHARE_API_KEY         # Ayrshare API key (social media posting)
@@ -157,19 +159,114 @@ STRIPE_WEBHOOK_SECRET    # Stripe webhook verification
 HUM_MOCK_INTEGRATIONS    # "true" to use mock providers (no API keys needed)
 ```
 
+## Cloud Deployment (AWS via SST)
+
+### Architecture
+
+```
+CloudFront → Lambda (Next.js Dashboard)
+                    ↕
+              RDS PostgreSQL (db.t4g.micro)
+                    ↕
+EventBridge Cron → Lambda (Content Engine)     — weekly
+API Gateway     → Lambda (Onboarding)          — on-demand
+                    ↕
+              S3 (Media Storage)
+```
+
+All infrastructure is defined in `sst.config.ts` using SST Ion. Resources: VPC (EC2 NAT), RDS Postgres, S3, CloudFront, Lambda functions, EventBridge cron.
+
+### Prerequisites
+
+- AWS CLI installed (`brew install awscli`)
+- AWS account with IAM Identity Center enabled
+- SST installed (already in devDependencies)
+
+### AWS Setup (one-time)
+
+1. Enable IAM Identity Center in AWS Console
+2. Create a user and assign AdministratorAccess permission set
+3. Configure CLI:
+
+```bash
+aws configure sso
+# SSO session name: hum
+# SSO start URL: https://d-xxxxxxxxxx.awsapps.com/start
+# SSO region: us-east-1
+# CLI profile name: hum-dev
+```
+
+### Deploy
+
+```bash
+# 1. Login to AWS
+aws sso login --profile hum-dev
+export AWS_PROFILE=hum-dev
+
+# 2. Set secrets (one-time per stage)
+npx sst secret set OpenaiApiKey "sk-..." --stage dev
+npx sst secret set FalApiKey "..." --stage dev
+npx sst secret set AyrshareApiKey "placeholder" --stage dev
+npx sst secret set StripeSecretKey "placeholder" --stage dev
+npx sst secret set StripeWebhookSecret "placeholder" --stage dev
+
+# 3. Deploy (~5-10 min first time)
+npx sst deploy --stage dev
+```
+
+### Verify
+
+```bash
+# Check deploy outputs (dashboard URL, etc.)
+npx sst output --stage dev
+
+# Test content engine Lambda
+npx sst invoke --stage dev ContentEngine
+
+# Test onboarding Lambda
+npx sst invoke --stage dev Onboarding \
+  --payload '{"action":"start","intakeData":{"businessName":"Test Restaurant","email":"test@example.com","menu":"Burger $12","cuisineType":"American","address":"123 Main St","planTier":"starter"}}'
+```
+
+### Teardown
+
+```bash
+npx sst remove --stage dev    # deletes all resources (removal policy is "remove" for non-prod)
+```
+
+### CI/CD
+
+GitHub Actions (`.github/workflows/deploy.yml`) deploys automatically:
+- Push to `main` → deploy to dev
+- Push tag `v*` → deploy to prod (currently commented out)
+
+Required GitHub secrets: `AWS_DEV_ACCESS_KEY_ID`, `AWS_DEV_SECRET_ACCESS_KEY`
+
+### Cost (~$0/mo year 1 on free tier)
+
+| Resource | Free Tier |
+|----------|-----------|
+| RDS db.t4g.micro | 750 hrs/mo for 12 months |
+| Lambda | 1M requests/mo (always free) |
+| S3 | 5 GB (12 months) |
+| CloudFront | 1 TB transfer (always free) |
+| EC2 NAT | ~$3/mo (not free tier) |
+
 ## Project Structure
 
 ```
 hum/
-├── hum-core/                 # Data models, DB, config
-├── hum-integrations/         # OpenAI, fal.ai, Ayrshare, Stripe clients
-├── hum-content-engine/       # Content generation pipeline
-├── hum-onboarding/           # Client intake pipeline (design only)
-├── hum-dashboard/            # Operator dashboard (design only)
+├── sst.config.ts                # SST infrastructure definition
+├── hum-core/                    # Data models, DB, config
+├── hum-integrations/            # OpenAI, fal.ai, Ayrshare, Stripe clients
+├── hum-content-engine/          # Content generation pipeline + Lambda handler
+├── hum-onboarding/              # Client intake pipeline + Lambda handler
+├── hum-dashboard/               # Operator dashboard (Next.js)
+├── .github/workflows/           # CI/CD pipeline
 ├── docs/
 │   └── superpowers/
-│       ├── specs/            # Design specifications
-│       └── plans/            # Implementation plans
+│       ├── specs/               # Design specifications
+│       └── plans/               # Implementation plans
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
 └── .env.example

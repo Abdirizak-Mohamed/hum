@@ -5,12 +5,12 @@ import { OnboardingSession } from '../types.js';
 
 let humDb: HumDb;
 
-beforeEach(() => {
-  humDb = createDb(':memory:');
+beforeEach(async () => {
+  humDb = await createDb();
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 async function createTestClient() {

@@ -1,12 +1,11 @@
 import { eq, and, type SQL } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { HumDb } from '../db/connection.js';
 import { clients } from '../db/schema.js';
 import { Client } from '../models/client.js';
 import { NotFoundError } from '../utils/errors.js';
-import type * as schema from '../db/schema.js';
 
-type Db = BetterSQLite3Database<typeof schema>;
+type Db = HumDb['db'];
 
 export async function create(
   db: Db,
@@ -24,7 +23,7 @@ export async function create(
     status?: 'onboarding' | 'active' | 'paused' | 'churned';
   },
 ): Promise<Client> {
-  const now = new Date();
+  const now = Date.now();
   const id = uuidv7();
 
   await db.insert(clients)
@@ -44,19 +43,19 @@ export async function create(
       createdAt: now,
       updatedAt: now,
     })
-    .run();
+    .execute();
 
-  const row = await db.select().from(clients).where(eq(clients.id, id)).get();
+  const row = (await db.select().from(clients).where(eq(clients.id, id)))[0];
   return new Client(row!);
 }
 
 export async function getById(db: Db, id: string): Promise<Client | undefined> {
-  const row = await db.select().from(clients).where(eq(clients.id, id)).get();
+  const row = (await db.select().from(clients).where(eq(clients.id, id)))[0];
   return row ? new Client(row) : undefined;
 }
 
 export async function getByEmail(db: Db, email: string): Promise<Client | undefined> {
-  const row = await db.select().from(clients).where(eq(clients.email, email)).get();
+  const row = (await db.select().from(clients).where(eq(clients.email, email)))[0];
   return row ? new Client(row) : undefined;
 }
 
@@ -78,11 +77,11 @@ export async function update(
   }>,
 ): Promise<Client> {
   await db.update(clients)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...data, updatedAt: Date.now() })
     .where(eq(clients.id, id))
-    .run();
+    .execute();
 
-  const row = await db.select().from(clients).where(eq(clients.id, id)).get();
+  const row = (await db.select().from(clients).where(eq(clients.id, id)))[0];
   if (!row) throw new NotFoundError('Client', id);
   return new Client(row);
 }
@@ -96,12 +95,12 @@ export async function list(
   if (filters?.planTier) conditions.push(eq(clients.planTier, filters.planTier as any));
 
   const rows = conditions.length
-    ? await db.select().from(clients).where(and(...conditions)).all()
-    : await db.select().from(clients).all();
+    ? await db.select().from(clients).where(and(...conditions))
+    : await db.select().from(clients);
 
   return rows.map((row) => new Client(row));
 }
 
 export async function remove(db: Db, id: string): Promise<void> {
-  await db.delete(clients).where(eq(clients.id, id)).run();
+  await db.delete(clients).where(eq(clients.id, id)).execute();
 }

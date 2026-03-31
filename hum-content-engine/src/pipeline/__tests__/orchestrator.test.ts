@@ -56,7 +56,7 @@ function createMockSocial(): SocialClient {
 }
 
 beforeEach(async () => {
-  humDb = createDb(':memory:');
+  humDb = await createDb();
   tmpDir = await mkdtemp(path.join(tmpdir(), 'hum-orchestrator-'));
   mockConfig.storage.basePath = tmpDir;
   storage = new LocalStorageClient(tmpDir);
@@ -67,7 +67,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  humDb?.close();
+  await humDb?.close();
   await rm(tmpDir, { recursive: true, force: true });
   vi.unstubAllGlobals();
 });

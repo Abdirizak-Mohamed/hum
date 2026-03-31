@@ -16,8 +16,8 @@ const makeClient = (overrides = {}) =>
     planTier: 'growth' as const,
     stripeCustomerId: 'cus_123',
     status: 'active' as const,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     ...overrides,
   });
 

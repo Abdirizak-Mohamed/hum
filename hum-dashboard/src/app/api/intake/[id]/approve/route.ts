@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { intakeSubmissionRepo, portalUserRepo, clientRepo, DuplicateError } from 'hum-core';
 import { startOnboarding, createStubContentEngine } from 'hum-onboarding';
 import { createAiClient } from 'hum-integrations';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import type { IntakeData } from 'hum-onboarding';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const db = await getDb();
   const { id } = await params;
 
   // Load submission
@@ -71,7 +72,7 @@ export async function POST(
   // Mark submission as approved
   await intakeSubmissionRepo.update(db, id, {
     status: 'approved',
-    reviewedAt: new Date(),
+    reviewedAt: Date.now(),
   });
 
   return NextResponse.json({ ok: true, clientId });

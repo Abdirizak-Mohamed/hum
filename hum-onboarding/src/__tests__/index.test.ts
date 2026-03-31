@@ -6,12 +6,12 @@ import type { AiClient } from 'hum-integrations';
 
 let humDb: HumDb;
 
-beforeEach(() => {
-  humDb = createDb(':memory:');
+beforeEach(async () => {
+  humDb = await createDb();
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 // Custom mock that returns valid JSON from generateCopy (for menu extraction)

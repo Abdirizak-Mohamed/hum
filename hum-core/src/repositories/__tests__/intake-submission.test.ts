@@ -8,7 +8,7 @@ let humDb: HumDb;
 let portalUserId: string;
 
 beforeEach(async () => {
-  humDb = createDb(':memory:');
+  humDb = await createDb();
   // Create a portal user for FK reference
   const user = await portalUserRepo.create(humDb.db, {
     email: 'ali@kebabs.com',
@@ -18,8 +18,8 @@ beforeEach(async () => {
   portalUserId = user.id;
 });
 
-afterEach(() => {
-  humDb?.close();
+afterEach(async () => {
+  await humDb?.close();
 });
 
 describe('intakeSubmissionRepo', () => {
@@ -106,7 +106,7 @@ describe('intakeSubmissionRepo', () => {
         portalUserId,
         businessName: 'Ali Kebabs',
       });
-      const now = new Date();
+      const now = Date.now();
       const updated = await intakeSubmissionRepo.update(humDb.db, created.id, {
         status: 'submitted',
         submittedAt: now,
@@ -139,7 +139,7 @@ describe('intakeSubmissionRepo', () => {
       // Submit first one
       await intakeSubmissionRepo.update(humDb.db, sub1.id, {
         status: 'submitted',
-        submittedAt: new Date(),
+        submittedAt: Date.now(),
       });
 
       const drafts = await intakeSubmissionRepo.listByStatus(humDb.db, 'draft');

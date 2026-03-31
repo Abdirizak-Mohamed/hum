@@ -20,9 +20,10 @@ export class ContentItem {
     this.status = row.status; this.caption = row.caption;
     this.hashtags = row.hashtags ?? []; this.cta = row.cta;
     this.mediaUrls = row.mediaUrls ?? []; this.platforms = row.platforms ?? [];
-    this.scheduledAt = row.scheduledAt; this.postedAt = row.postedAt;
+    this.scheduledAt = row.scheduledAt ? new Date(row.scheduledAt) : null;
+    this.postedAt = row.postedAt ? new Date(row.postedAt) : null;
     this.performance = row.performance as Performance | null;
-    this.createdAt = row.createdAt; this.updatedAt = row.updatedAt;
+    this.createdAt = new Date(row.createdAt); this.updatedAt = new Date(row.updatedAt);
   }
 
   canPublish(): boolean { return this.status === 'draft' || this.status === 'scheduled'; }

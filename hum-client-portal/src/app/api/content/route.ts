@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPortalUser } from '@/lib/auth';
 import { contentItemRepo } from 'hum-core';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const user = await getPortalUser();
@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = await getDb();
   const { searchParams } = request.nextUrl;
   const status = searchParams.get('status') ?? undefined;
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));

@@ -1,8 +1,8 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, bigint, real, jsonb } from 'drizzle-orm/pg-core';
 
 // ── Client ──────────────────────────────────────────────
 
-export const clients = sqliteTable('clients', {
+export const clients = pgTable('clients', {
   id: text('id').primaryKey(),
   businessName: text('business_name').notNull(),
   address: text('address'),
@@ -10,56 +10,56 @@ export const clients = sqliteTable('clients', {
   longitude: real('longitude'),
   phone: text('phone'),
   email: text('email').notNull(),
-  openingHours: text('opening_hours', { mode: 'json' }).$type<Record<string, string>>(),
-  deliveryPlatforms: text('delivery_platforms', { mode: 'json' }).$type<string[]>().default([]),
+  openingHours: jsonb('opening_hours').$type<Record<string, string>>(),
+  deliveryPlatforms: jsonb('delivery_platforms').$type<string[]>().default([]),
   planTier: text('plan_tier', { enum: ['starter', 'growth', 'premium'] }).notNull().default('starter'),
   stripeCustomerId: text('stripe_customer_id'),
   status: text('status', { enum: ['onboarding', 'active', 'paused', 'churned'] }).notNull().default('onboarding'),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
 
 // ── BrandProfile ────────────────────────────────────────
 
-export const brandProfiles = sqliteTable('brand_profiles', {
+export const brandProfiles = pgTable('brand_profiles', {
   id: text('id').primaryKey(),
   clientId: text('client_id').notNull().references(() => clients.id).unique(),
   brandVoiceGuide: text('brand_voice_guide'),
-  keySellingPoints: text('key_selling_points', { mode: 'json' }).$type<string[]>().default([]),
+  keySellingPoints: jsonb('key_selling_points').$type<string[]>().default([]),
   targetAudienceProfile: text('target_audience_profile'),
-  contentThemes: text('content_themes', { mode: 'json' }).$type<string[]>().default([]),
-  hashtagStrategy: text('hashtag_strategy', { mode: 'json' }).$type<string[]>().default([]),
-  peakPostingTimes: text('peak_posting_times', { mode: 'json' }).$type<Record<string, string[]>>().default({}),
-  menuItems: text('menu_items', { mode: 'json' }).$type<Array<{
+  contentThemes: jsonb('content_themes').$type<string[]>().default([]),
+  hashtagStrategy: jsonb('hashtag_strategy').$type<string[]>().default([]),
+  peakPostingTimes: jsonb('peak_posting_times').$type<Record<string, string[]>>().default({}),
+  menuItems: jsonb('menu_items').$type<Array<{
     name: string;
     description: string;
     category: string;
     price: number;
     photoUrl?: string;
   }>>().default([]),
-  brandColours: text('brand_colours', { mode: 'json' }).$type<string[]>().default([]),
+  brandColours: jsonb('brand_colours').$type<string[]>().default([]),
   logoUrl: text('logo_url'),
-  generatedAt: integer('generated_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  generatedAt: bigint('generated_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
 
 // ── SocialAccount ───────────────────────────────────────
 
-export const socialAccounts = sqliteTable('social_accounts', {
+export const socialAccounts = pgTable('social_accounts', {
   id: text('id').primaryKey(),
   clientId: text('client_id').notNull().references(() => clients.id),
   platform: text('platform', { enum: ['instagram', 'facebook', 'tiktok', 'google_business'] }).notNull(),
   platformAccountId: text('platform_account_id').notNull(),
   ayrshareProfileKey: text('ayrshare_profile_key'),
   status: text('status', { enum: ['connected', 'disconnected', 'expired'] }).notNull().default('disconnected'),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  connectedAt: integer('connected_at', { mode: 'timestamp_ms' }),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  connectedAt: bigint('connected_at', { mode: 'number' }),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
 
 // ── ContentItem ─────────────────────────────────────────
 
-export const contentItems = sqliteTable('content_items', {
+export const contentItems = pgTable('content_items', {
   id: text('id').primaryKey(),
   clientId: text('client_id').notNull().references(() => clients.id),
   contentType: text('content_type', {
@@ -67,81 +67,81 @@ export const contentItems = sqliteTable('content_items', {
   }).notNull(),
   status: text('status', { enum: ['draft', 'scheduled', 'posted', 'failed'] }).notNull().default('draft'),
   caption: text('caption'),
-  hashtags: text('hashtags', { mode: 'json' }).$type<string[]>().default([]),
+  hashtags: jsonb('hashtags').$type<string[]>().default([]),
   cta: text('cta'),
-  mediaUrls: text('media_urls', { mode: 'json' }).$type<string[]>().default([]),
-  platforms: text('platforms', { mode: 'json' }).$type<string[]>().default([]),
-  scheduledAt: integer('scheduled_at', { mode: 'timestamp_ms' }),
-  postedAt: integer('posted_at', { mode: 'timestamp_ms' }),
-  performance: text('performance', { mode: 'json' }).$type<{
+  mediaUrls: jsonb('media_urls').$type<string[]>().default([]),
+  platforms: jsonb('platforms').$type<string[]>().default([]),
+  scheduledAt: bigint('scheduled_at', { mode: 'number' }),
+  postedAt: bigint('posted_at', { mode: 'number' }),
+  performance: jsonb('performance').$type<{
     reach: number;
     impressions: number;
     engagement: number;
     clicks: number;
   }>(),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
 
 // ── OnboardingSession ──────────────────────────────────
 
-export const onboardingSessions = sqliteTable('onboarding_sessions', {
+export const onboardingSessions = pgTable('onboarding_sessions', {
   id: text('id').primaryKey(),
   clientId: text('client_id').notNull().references(() => clients.id).unique(),
   status: text('status', { enum: ['in_progress', 'complete', 'failed'] }).notNull().default('in_progress'),
   currentStep: text('current_step'),
-  stepResults: text('step_results', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
-  intakeData: text('intake_data', { mode: 'json' }).$type<Record<string, unknown>>(),
+  stepResults: jsonb('step_results').$type<Record<string, unknown>>().default({}),
+  intakeData: jsonb('intake_data').$type<Record<string, unknown>>(),
   blockedReason: text('blocked_reason'),
-  startedAt: integer('started_at', { mode: 'timestamp_ms' }).notNull(),
-  completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  startedAt: bigint('started_at', { mode: 'number' }).notNull(),
+  completedAt: bigint('completed_at', { mode: 'number' }),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
 
 // ── PortalUser ─────────────────────────────────────────
-export const portalUsers = sqliteTable('portal_users', {
+export const portalUsers = pgTable('portal_users', {
   id: text('id').primaryKey(),
   clientId: text('client_id').references(() => clients.id),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: text('name').notNull(),
   status: text('status', { enum: ['pending_intake', 'pending_approval', 'active', 'suspended'] }).notNull().default('pending_intake'),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
-  lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
+  lastLoginAt: bigint('last_login_at', { mode: 'number' }),
 });
 
 // ── ClientUpload ───────────────────────────────────────
-export const clientUploads = sqliteTable('client_uploads', {
+export const clientUploads = pgTable('client_uploads', {
   id: text('id').primaryKey(),
   portalUserId: text('portal_user_id').notNull().references(() => portalUsers.id),
   filename: text('filename').notNull(),
   storagePath: text('storage_path').notNull(),
   mimeType: text('mime_type').notNull(),
-  sizeBytes: integer('size_bytes').notNull(),
+  sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
   category: text('category', { enum: ['food_photo', 'menu', 'logo', 'interior', 'other'] }).notNull(),
   status: text('status', { enum: ['pending', 'used', 'archived'] }).notNull().default('pending'),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });
 
 // ── IntakeSubmission ───────────────────────────────────
-export const intakeSubmissions = sqliteTable('intake_submissions', {
+export const intakeSubmissions = pgTable('intake_submissions', {
   id: text('id').primaryKey(),
   portalUserId: text('portal_user_id').notNull().references(() => portalUsers.id).unique(),
   businessName: text('business_name').notNull(),
   address: text('address'),
   phone: text('phone'),
-  openingHours: text('opening_hours', { mode: 'json' }).$type<Record<string, string>>(),
+  openingHours: jsonb('opening_hours').$type<Record<string, string>>(),
   menuData: text('menu_data'),
-  menuUploadIds: text('menu_upload_ids', { mode: 'json' }).$type<string[]>().default([]),
-  foodPhotoUploadIds: text('food_photo_upload_ids', { mode: 'json' }).$type<string[]>().default([]),
-  socialLinks: text('social_links', { mode: 'json' }).$type<Record<string, string>>(),
+  menuUploadIds: jsonb('menu_upload_ids').$type<string[]>().default([]),
+  foodPhotoUploadIds: jsonb('food_photo_upload_ids').$type<string[]>().default([]),
+  socialLinks: jsonb('social_links').$type<Record<string, string>>(),
   brandPreferences: text('brand_preferences'),
   status: text('status', { enum: ['draft', 'submitted', 'approved', 'rejected'] }).notNull().default('draft'),
-  submittedAt: integer('submitted_at', { mode: 'timestamp_ms' }),
-  reviewedAt: integer('reviewed_at', { mode: 'timestamp_ms' }),
+  submittedAt: bigint('submitted_at', { mode: 'number' }),
+  reviewedAt: bigint('reviewed_at', { mode: 'number' }),
   reviewNotes: text('review_notes'),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
+  updatedAt: bigint('updated_at', { mode: 'number' }).notNull(),
 });

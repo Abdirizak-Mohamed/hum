@@ -15,7 +15,7 @@ import {
 import bcrypt from 'bcryptjs';
 
 async function seed() {
-  const { db } = createDb();
+  const { db } = await createDb();
 
   console.log('🌱  Running seed...\n');
 
@@ -245,9 +245,9 @@ async function seed() {
   // 4. Content Items
   // ─────────────────────────────────────────────
 
-  const now = new Date();
-  const inDays = (n: number) => new Date(now.getTime() + n * 24 * 60 * 60 * 1000);
-  const daysAgo = (n: number) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
+  const now = Date.now();
+  const inDays = (n: number) => now + n * 24 * 60 * 60 * 1000;
+  const daysAgo = (n: number) => now - n * 24 * 60 * 60 * 1000;
 
   // 4a. Scheduled items (future dates)
   await contentItemRepo.create(db, {
@@ -397,7 +397,7 @@ async function seed() {
   if (pendingSub) {
     await intakeSubmissionRepo.update(db, pendingSub.id, {
       status: 'submitted',
-      submittedAt: new Date(),
+      submittedAt: Date.now(),
     });
   }
 
