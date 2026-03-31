@@ -1,15 +1,18 @@
 // Database
 export { createDb, type HumDb } from './db/connection.js';
-export { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions } from './db/schema.js';
+export { clients, brandProfiles, socialAccounts, contentItems, onboardingSessions, portalUsers, clientUploads, intakeSubmissions } from './db/schema.js';
 
 // Models
 export { Client, type ClientRow } from './models/client.js';
 export { BrandProfile, type BrandProfileRow, type MenuItem } from './models/brand-profile.js';
 export { SocialAccount, type SocialAccountRow } from './models/social-account.js';
 export { ContentItem, type ContentItemRow, type Performance } from './models/content-item.js';
+export { PortalUser, type PortalUserRow, type PortalUserStatus } from './models/portal-user.js';
+export { ClientUpload, type ClientUploadRow, type UploadCategory, type UploadStatus } from './models/client-upload.js';
+export { IntakeSubmission, type IntakeSubmissionRow, type IntakeSubmissionStatus } from './models/intake-submission.js';
 
 // Repositories
-export { clientRepo, brandProfileRepo, socialAccountRepo, contentItemRepo } from './repositories/index.js';
+export { clientRepo, brandProfileRepo, socialAccountRepo, contentItemRepo, portalUserRepo, clientUploadRepo, intakeSubmissionRepo } from './repositories/index.js';
 
 // Schemas
 export {
@@ -18,6 +21,9 @@ export {
   socialAccountSchema, createSocialAccountSchema, updateSocialAccountSchema,
   contentItemSchema, createContentItemSchema, updateContentItemSchema,
   onboardingSessionSchema, createOnboardingSessionSchema, updateOnboardingSessionSchema,
+  portalUserSchema, createPortalUserSchema, updatePortalUserSchema,
+  clientUploadSchema, createClientUploadSchema, updateClientUploadSchema,
+  intakeSubmissionSchema, createIntakeSubmissionSchema, updateIntakeSubmissionSchema,
 } from './schemas/index.js';
 
 // Config

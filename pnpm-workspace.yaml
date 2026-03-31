@@ -4,3 +4,4 @@ packages:
   - "hum-content-engine"
   - "hum-onboarding"
   - "hum-dashboard"
+  - "hum-client-portal"

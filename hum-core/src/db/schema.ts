@@ -97,3 +97,51 @@ export const onboardingSessions = sqliteTable('onboarding_sessions', {
   completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
+
+// ── PortalUser ─────────────────────────────────────────
+export const portalUsers = sqliteTable('portal_users', {
+  id: text('id').primaryKey(),
+  clientId: text('client_id').references(() => clients.id),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  name: text('name').notNull(),
+  status: text('status', { enum: ['pending_intake', 'pending_approval', 'active', 'suspended'] }).notNull().default('pending_intake'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+});
+
+// ── ClientUpload ───────────────────────────────────────
+export const clientUploads = sqliteTable('client_uploads', {
+  id: text('id').primaryKey(),
+  portalUserId: text('portal_user_id').notNull().references(() => portalUsers.id),
+  filename: text('filename').notNull(),
+  storagePath: text('storage_path').notNull(),
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  category: text('category', { enum: ['food_photo', 'menu', 'logo', 'interior', 'other'] }).notNull(),
+  status: text('status', { enum: ['pending', 'used', 'archived'] }).notNull().default('pending'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
+
+// ── IntakeSubmission ───────────────────────────────────
+export const intakeSubmissions = sqliteTable('intake_submissions', {
+  id: text('id').primaryKey(),
+  portalUserId: text('portal_user_id').notNull().references(() => portalUsers.id).unique(),
+  businessName: text('business_name').notNull(),
+  address: text('address'),
+  phone: text('phone'),
+  openingHours: text('opening_hours', { mode: 'json' }).$type<Record<string, string>>(),
+  menuData: text('menu_data'),
+  menuUploadIds: text('menu_upload_ids', { mode: 'json' }).$type<string[]>().default([]),
+  foodPhotoUploadIds: text('food_photo_upload_ids', { mode: 'json' }).$type<string[]>().default([]),
+  socialLinks: text('social_links', { mode: 'json' }).$type<Record<string, string>>(),
+  brandPreferences: text('brand_preferences'),
+  status: text('status', { enum: ['draft', 'submitted', 'approved', 'rejected'] }).notNull().default('draft'),
+  submittedAt: integer('submitted_at', { mode: 'timestamp_ms' }),
+  reviewedAt: integer('reviewed_at', { mode: 'timestamp_ms' }),
+  reviewNotes: text('review_notes'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});

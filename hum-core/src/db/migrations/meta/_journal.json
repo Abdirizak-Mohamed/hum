@@ -15,6 +15,13 @@
       "when": 1774186662295,
       "tag": "0001_petite_gwen_stacy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1774568100325,
+      "tag": "0002_flat_lady_bullseye",
+      "breakpoints": true
     }
   ]
 }
