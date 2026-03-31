@@ -14,14 +14,3 @@ export async function createPgDb(url: string): Promise<HumDb> {
     },
   };
 }
-
-/** Run migrations — call this separately during deploy, not on every connection. */
-export async function runMigrations(url: string): Promise<void> {
-  const { migrate } = await import('drizzle-orm/node-postgres/migrator');
-  const pool = new pg.Pool({ connectionString: url });
-  const db = drizzle(pool, { schema });
-  await migrate(db, {
-    migrationsFolder: new URL('./migrations', import.meta.url).pathname,
-  });
-  await pool.end();
-}
